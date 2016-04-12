@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<Config>
+	<installerName>Calford Seaden Installer</installerName>
+	<proceedMessage>An application is ready to be installed on your computer. The application will install silently in the background and you will notified when it's completed, do you want to proceed?</proceedMessage>
+	<completeMessage>The install has now been completed. Please note you may need to restart your computer before you can start using the software.</completeMessage>
+	<helpText>If you have any questions regarding this install please email support@example.com</helpText>
+</Config>
