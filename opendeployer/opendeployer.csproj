@@ -45,6 +45,7 @@
       <HintPath>..\..\MetroFramework\DLLS\MetroFramework.Fonts.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.IO.Compression.FileSystem" />
@@ -66,6 +67,7 @@
       <DependentUpon>complete.cs</DependentUpon>
     </Compile>
     <Compile Include="formflash.cs" />
+    <Compile Include="formprogress.cs" />
     <Compile Include="main.cs">
       <SubType>Form</SubType>
     </Compile>

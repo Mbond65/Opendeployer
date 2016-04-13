@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<Software>
+	<applicationName>Adobe Reader xi</applicationName>
+	<applicationInstallLocation>http://127.0.0.1/Adobe Reader x11.zip</applicationInstallLocation>
+	<applicationLocalLocation>C:\Adobe Reader x11</applicationLocalLocation>
+	<applicationVersion>184549376</applicationVersion>
+	<CommandLines>
+		<Install>
+			<Executable>C:\windows\System32\msiexec.exe</Executable>
+			<Arguements>/i "C:\Adobe Reader x11\Adobe Reader xi\AcroRead.msi" /qn EULA_ACCEPT=YES DISABLE_ARM_SERVICE_INSTALL=1 AgreeToLicense=Yes RebootYesNo=No</Arguements>
+		</Install>
+	</CommandLines>
+</Software>

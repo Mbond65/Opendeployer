@@ -4,9 +4,11 @@ using System.Net;
 using System.Diagnostics;
 using System.Windows.Forms;
 using System.Xml;
+using System.Configuration;
 using Microsoft.Win32;
 using System.Drawing;
-
+using System.Data.SqlClient;
+using System.Net.Sockets;
 namespace opendeployer
 {
     public partial class Main : MetroFramework.Forms.MetroForm
@@ -16,6 +18,10 @@ namespace opendeployer
         private string _applicationLocalLocation;
         private string _applicationVersion;
         private string _applicationGuid;
+        private string _sqlusername;
+        private string _sqlpassword;
+        private string _sqlserver;
+        private string _sqlport;
         private string _companyName;
 
         public Main()
@@ -23,7 +29,8 @@ namespace opendeployer
             InitializeComponent();
         }
         private void Main_Load(object sender, EventArgs e)
-        {                   
+        {
+
             try
             {
                 checkXMLFile();
@@ -45,6 +52,7 @@ namespace opendeployer
         }
         private void Main_Shown(object sender, EventArgs e)
         {
+
             Application.DoEvents();
 
             try
@@ -92,8 +100,16 @@ namespace opendeployer
             doc.Load("config.xml");
 
             node = doc.DocumentElement.SelectSingleNode("/Config/installerName");
+            node2 = doc.DocumentElement.SelectSingleNode("/Config/SQL/username");
+            node3 = doc.DocumentElement.SelectSingleNode("/Config/SQL/password");
+            node4 = doc.DocumentElement.SelectSingleNode("/Config/SQL/server");
+            node5 = doc.DocumentElement.SelectSingleNode("/Config/SQL/port");
 
             _companyName = node.InnerText;
+            _sqlusername = node2.InnerText;
+            _sqlpassword = node3.InnerText;
+            _sqlserver = node4.InnerText;
+            _sqlport = node5.InnerText;
         }
         private void getLogo()
         {
@@ -239,6 +255,7 @@ namespace opendeployer
         {
             lblStatus.Text = "Status: Downloading installer";
             pbMain.Value = 20;
+            TaskbarProgress.SetValue(this.Handle, 20, 100);
             Application.DoEvents();
 
             using (WebClient client = new WebClient())
@@ -250,6 +267,7 @@ namespace opendeployer
         {
             lblStatus.Text = "Status: Extracting installer";
             pbMain.Value = 40;
+            TaskbarProgress.SetValue(this.Handle, 40, 100);
             Application.DoEvents();
 
             System.IO.Compression.ZipFile.ExtractToDirectory(String.Concat(_applicationLocalLocation, @"\", _applicationName, ".zip"), String.Concat(_applicationLocalLocation, @"\", _applicationName));
@@ -273,6 +291,7 @@ namespace opendeployer
         {
             lblStatus.Text = "Status: Running installer";
             pbMain.Value = 80;
+            TaskbarProgress.SetValue(this.Handle, 80, 100);
             Application.DoEvents();
 
             XmlDocument doc = new XmlDocument();
@@ -308,12 +327,16 @@ namespace opendeployer
             {
                 lblStatus.Text = "Status: Complete";
                 pbMain.Value = 100;
+                TaskbarProgress.SetValue(this.Handle, 100, 100);
+                writeSQLDB(true);
                 updateGUIDRegistryKey(true);
             }
             else
             {
                 lblStatus.Text = "Status: Failed";
                 pbMain.Value = 0;
+                TaskbarProgress.SetValue(this.Handle, 100, 100);
+                writeSQLDB(false);
                 updateGUIDRegistryKey(false);
             }         
 
@@ -330,6 +353,13 @@ namespace opendeployer
         {
             RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Opendeployer", true);
             key.SetValue(_applicationGuid, Convert.ToInt32(installed), RegistryValueKind.DWord);
+        }
+        private int getInstallCode()
+        {
+            RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Opendeployer");
+            object installcode = (object)key.GetValue(_applicationGuid) ?? "999";
+
+            return Convert.ToInt32(installcode);
         }
         private bool checkApplicationInstalled()
         {
@@ -374,6 +404,39 @@ namespace opendeployer
             }
 
             return false;
+        }
+        public static string GetLocalIPAddress()
+        {
+            var host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (var ip in host.AddressList)
+            {
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    return ip.ToString();
+                }
+            }
+            throw new Exception("Local IP Address Not Found!");
+        }
+        private void writeSQLDB(bool installed)
+        {
+            ConnectionStringSettings conSettings = new ConnectionStringSettings("opendeployer", "Server=" + _sqlserver + "," + _sqlport + ";Database=opendeployer;User Id=" + _sqlusername + ";Password=" + _sqlpassword + "");
+
+            SqlConnection sqlConn = new SqlConnection(conSettings.ConnectionString);
+            SqlCommand sqlComm = new SqlCommand();
+            sqlComm = sqlConn.CreateCommand();
+            sqlComm.CommandText = @"INSERT INTO deployments (guid, name, version, installcode, date, time, host, hostos, hostip) VALUES (@guid, @name, @version, @installcode, @date, @time, @host, @hostos, @hostip)";
+            sqlComm.Parameters.AddWithValue("guid", _applicationGuid);
+            sqlComm.Parameters.AddWithValue("name", _applicationName);
+            sqlComm.Parameters.AddWithValue("version", _applicationVersion);
+            sqlComm.Parameters.AddWithValue("installcode", getInstallCode());
+            sqlComm.Parameters.AddWithValue("date", DateTime.Now.ToShortDateString());
+            sqlComm.Parameters.AddWithValue("time", DateTime.Now.ToShortTimeString());
+            sqlComm.Parameters.AddWithValue("host", Dns.GetHostName());
+            sqlComm.Parameters.AddWithValue("hostos", Environment.OSVersion);
+            sqlComm.Parameters.AddWithValue("hostip", GetLocalIPAddress());
+            sqlConn.Open();
+            sqlComm.ExecuteNonQuery();
+            sqlConn.Close();
         }
     }
 }
