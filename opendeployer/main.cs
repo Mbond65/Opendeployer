@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Data;
 using System.Diagnostics;
 using System.Windows.Forms;
 using System.Xml;
@@ -9,6 +10,8 @@ using Microsoft.Win32;
 using System.Drawing;
 using System.Data.SqlClient;
 using System.Net.Sockets;
+using System.Management;
+
 namespace opendeployer
 {
     public partial class Main : MetroFramework.Forms.MetroForm
@@ -21,7 +24,6 @@ namespace opendeployer
         private string _sqlusername;
         private string _sqlpassword;
         private string _sqlserver;
-        private string _sqlport;
         private string _companyName;
 
         public Main()
@@ -69,6 +71,8 @@ namespace opendeployer
             catch (Exception ex)
             {
                 writeEventLog(ex.Message);
+                updateGUIDRegistryKey(false);
+                writeSQLDB(ex.Message);
                 Environment.Exit(1);
             }
         }
@@ -103,13 +107,11 @@ namespace opendeployer
             node2 = doc.DocumentElement.SelectSingleNode("/Config/SQL/username");
             node3 = doc.DocumentElement.SelectSingleNode("/Config/SQL/password");
             node4 = doc.DocumentElement.SelectSingleNode("/Config/SQL/server");
-            node5 = doc.DocumentElement.SelectSingleNode("/Config/SQL/port");
 
             _companyName = node.InnerText;
             _sqlusername = node2.InnerText;
             _sqlpassword = node3.InnerText;
             _sqlserver = node4.InnerText;
-            _sqlport = node5.InnerText;
         }
         private void getLogo()
         {
@@ -328,16 +330,16 @@ namespace opendeployer
                 lblStatus.Text = "Status: Complete";
                 pbMain.Value = 100;
                 TaskbarProgress.SetValue(this.Handle, 100, 100);
-                writeSQLDB(true);
                 updateGUIDRegistryKey(true);
+                writeSQLDB("Install Successfully");
             }
             else
             {
                 lblStatus.Text = "Status: Failed";
                 pbMain.Value = 0;
                 TaskbarProgress.SetValue(this.Handle, 100, 100);
-                writeSQLDB(false);
                 updateGUIDRegistryKey(false);
+                writeSQLDB("Failed to install");             
             }         
 
             Complete msgBox = new Complete();
@@ -417,23 +419,37 @@ namespace opendeployer
             }
             throw new Exception("Local IP Address Not Found!");
         }
-        private void writeSQLDB(bool installed)
+        public static string GetOSFriendlyName()
         {
-            ConnectionStringSettings conSettings = new ConnectionStringSettings("opendeployer", "Server=" + _sqlserver + "," + _sqlport + ";Database=opendeployer;User Id=" + _sqlusername + ";Password=" + _sqlpassword + "");
+            string result = string.Empty;
+            ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT Caption FROM Win32_OperatingSystem");
+            foreach (ManagementObject os in searcher.Get())
+            {
+                result = os["Caption"].ToString();
+                break;
+            }
+            return result;
+        }
+        private void writeSQLDB(string msg)
+        {
+            ConnectionStringSettings conSettings = new ConnectionStringSettings("opendeployer", "Server=" + _sqlserver + ";Database=opendeployer;User Id=" + _sqlusername + ";Password=" + _sqlpassword + "");
+
+            Guid applicationGuid = new Guid("74e1da23-7d1a-48bf-b860-4e6658c0558f");
 
             SqlConnection sqlConn = new SqlConnection(conSettings.ConnectionString);
             SqlCommand sqlComm = new SqlCommand();
             sqlComm = sqlConn.CreateCommand();
-            sqlComm.CommandText = @"INSERT INTO deployments (guid, name, version, installcode, date, time, host, hostos, hostip) VALUES (@guid, @name, @version, @installcode, @date, @time, @host, @hostos, @hostip)";
-            sqlComm.Parameters.AddWithValue("guid", _applicationGuid);
-            sqlComm.Parameters.AddWithValue("name", _applicationName);
-            sqlComm.Parameters.AddWithValue("version", _applicationVersion);
-            sqlComm.Parameters.AddWithValue("installcode", getInstallCode());
-            sqlComm.Parameters.AddWithValue("date", DateTime.Now.ToShortDateString());
-            sqlComm.Parameters.AddWithValue("time", DateTime.Now.ToShortTimeString());
-            sqlComm.Parameters.AddWithValue("host", Dns.GetHostName());
-            sqlComm.Parameters.AddWithValue("hostos", Environment.OSVersion);
-            sqlComm.Parameters.AddWithValue("hostip", GetLocalIPAddress());
+            sqlComm.CommandText = @"INSERT INTO deployments (guid, name, version, installcode, message, date, time, hostname, hostos, hostip) VALUES (@guid, @name, @version, @installcode, @message, @date, @time, @hostname, @hostos, @hostip)";
+            sqlComm.Parameters.Add("guid", SqlDbType.UniqueIdentifier).Value = applicationGuid;
+            sqlComm.Parameters.Add("name", SqlDbType.NVarChar).Value = _applicationName;
+            sqlComm.Parameters.Add("version", SqlDbType.Float).Value = _applicationVersion;
+            sqlComm.Parameters.Add("installcode", SqlDbType.Int).Value = getInstallCode();
+            sqlComm.Parameters.Add("message", SqlDbType.NVarChar).Value = msg;
+            sqlComm.Parameters.Add("date", SqlDbType.Date).Value = DateTime.Now.ToShortDateString();
+            sqlComm.Parameters.Add("time", SqlDbType.Time).Value = DateTime.Now.ToShortTimeString();
+            sqlComm.Parameters.Add("hostname", SqlDbType.NVarChar).Value = Dns.GetHostName();
+            sqlComm.Parameters.Add("hostos", SqlDbType.NVarChar).Value = GetOSFriendlyName();
+            sqlComm.Parameters.Add("hostip", SqlDbType.NVarChar).Value = GetLocalIPAddress();
             sqlConn.Open();
             sqlComm.ExecuteNonQuery();
             sqlConn.Close();
