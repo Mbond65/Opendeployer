@@ -84,5 +84,13 @@ namespace opendeployer
 
             lblProceedMessage.Text = node.InnerText;
         }
+        private void rbInstallLaterDate_CheckedChanged(object sender, EventArgs e)
+        {
+            dtPicker.Enabled = true;
+        }
+        private void rbInstallNow_CheckedChanged(object sender, EventArgs e)
+        {
+            dtPicker.Enabled = false;
+        }
     }
 }

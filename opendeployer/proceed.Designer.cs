@@ -34,13 +34,16 @@
             this.lblApplicationName = new MetroFramework.Controls.MetroLabel();
             this.pbLogo = new System.Windows.Forms.PictureBox();
             this.lblProceedMessage = new MetroFramework.Controls.MetroLabel();
+            this.rbInstallNow = new MetroFramework.Controls.MetroRadioButton();
+            this.rbInstallLaterDate = new MetroFramework.Controls.MetroRadioButton();
+            this.dtPicker = new MetroFramework.Controls.MetroDateTime();
             ((System.ComponentModel.ISupportInitialize)(this.pbLogo)).BeginInit();
             this.SuspendLayout();
             // 
             // txtbtnYes
             // 
             this.txtbtnYes.Image = null;
-            this.txtbtnYes.Location = new System.Drawing.Point(167, 141);
+            this.txtbtnYes.Location = new System.Drawing.Point(167, 261);
             this.txtbtnYes.Name = "txtbtnYes";
             this.txtbtnYes.Size = new System.Drawing.Size(109, 23);
             this.txtbtnYes.TabIndex = 0;
@@ -52,7 +55,7 @@
             // txtbtnNo
             // 
             this.txtbtnNo.Image = null;
-            this.txtbtnNo.Location = new System.Drawing.Point(304, 141);
+            this.txtbtnNo.Location = new System.Drawing.Point(304, 261);
             this.txtbtnNo.Name = "txtbtnNo";
             this.txtbtnNo.Size = new System.Drawing.Size(109, 23);
             this.txtbtnNo.TabIndex = 1;
@@ -88,11 +91,47 @@
             this.lblProceedMessage.TabIndex = 6;
             this.lblProceedMessage.WrapToLine = true;
             // 
+            // rbInstallNow
+            // 
+            this.rbInstallNow.AutoSize = true;
+            this.rbInstallNow.Location = new System.Drawing.Point(167, 148);
+            this.rbInstallNow.Name = "rbInstallNow";
+            this.rbInstallNow.Size = new System.Drawing.Size(80, 15);
+            this.rbInstallNow.TabIndex = 7;
+            this.rbInstallNow.Text = "Install now";
+            this.rbInstallNow.UseSelectable = true;
+            this.rbInstallNow.CheckedChanged += new System.EventHandler(this.rbInstallNow_CheckedChanged);
+            // 
+            // rbInstallLaterDate
+            // 
+            this.rbInstallLaterDate.AutoSize = true;
+            this.rbInstallLaterDate.Location = new System.Drawing.Point(167, 179);
+            this.rbInstallLaterDate.Name = "rbInstallLaterDate";
+            this.rbInstallLaterDate.Size = new System.Drawing.Size(128, 15);
+            this.rbInstallLaterDate.TabIndex = 8;
+            this.rbInstallLaterDate.Text = "Install at a later date";
+            this.rbInstallLaterDate.UseSelectable = true;
+            this.rbInstallLaterDate.CheckedChanged += new System.EventHandler(this.rbInstallLaterDate_CheckedChanged);
+            // 
+            // dtPicker
+            // 
+            this.dtPicker.Enabled = false;
+            this.dtPicker.Location = new System.Drawing.Point(167, 211);
+            this.dtPicker.MaxDate = new System.DateTime(2016, 4, 14, 0, 0, 0, 0);
+            this.dtPicker.MinimumSize = new System.Drawing.Size(0, 29);
+            this.dtPicker.Name = "dtPicker";
+            this.dtPicker.Size = new System.Drawing.Size(200, 29);
+            this.dtPicker.TabIndex = 9;
+            this.dtPicker.Value = new System.DateTime(2016, 4, 14, 0, 0, 0, 0);
+            // 
             // Proceed
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(436, 177);
+            this.ClientSize = new System.Drawing.Size(436, 307);
+            this.Controls.Add(this.dtPicker);
+            this.Controls.Add(this.rbInstallLaterDate);
+            this.Controls.Add(this.rbInstallNow);
             this.Controls.Add(this.lblProceedMessage);
             this.Controls.Add(this.pbLogo);
             this.Controls.Add(this.lblApplicationName);
@@ -115,5 +154,8 @@
         private MetroFramework.Controls.MetroLabel lblApplicationName;
         private System.Windows.Forms.PictureBox pbLogo;
         private MetroFramework.Controls.MetroLabel lblProceedMessage;
+        private MetroFramework.Controls.MetroRadioButton rbInstallNow;
+        private MetroFramework.Controls.MetroRadioButton rbInstallLaterDate;
+        private MetroFramework.Controls.MetroDateTime dtPicker;
     }
 }
