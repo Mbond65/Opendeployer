@@ -450,9 +450,17 @@ namespace opendeployer
             sqlComm.Parameters.Add("hostname", SqlDbType.NVarChar).Value = Dns.GetHostName();
             sqlComm.Parameters.Add("hostos", SqlDbType.NVarChar).Value = GetOSFriendlyName();
             sqlComm.Parameters.Add("hostip", SqlDbType.NVarChar).Value = GetLocalIPAddress();
-            sqlConn.Open();
-            sqlComm.ExecuteNonQuery();
-            sqlConn.Close();
+
+            try
+            {
+                sqlConn.Open();
+                sqlComm.ExecuteNonQuery();
+                sqlConn.Close();
+            }
+            catch (Exception ex)
+            {
+                writeEventLog(ex.Message, EventLogEntryType.Error);
+            }
         }
     }
 }
