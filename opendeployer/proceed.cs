@@ -57,8 +57,11 @@ namespace opendeployer
         }
         private void txtbtnNo_Click(object sender, EventArgs e)
         {
-            _messageBox = false;
-            ActiveForm.Close();
+            if (rbInstallNow.Checked == true)
+            {
+                _messageBox = false;
+                ActiveForm.Close();
+            }
         }
         private void txtbtnYes_Click(object sender, EventArgs e)
         {
