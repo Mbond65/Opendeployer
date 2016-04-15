@@ -16,7 +16,7 @@ namespace opendeployer
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Proceed());
+            Application.Run(new Main());
         }
     }
 }

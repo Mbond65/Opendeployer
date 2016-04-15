@@ -18,6 +18,9 @@ namespace opendeployer
         public bool _messageBox { get; set; }
         public string _applicationName { get; set; }
         public string _companyName { get; set; }
+        public bool _scheduledInstall { get; set; }
+        public string _scheduledInstallDate { get; set; }
+        public string _scheduledInstallTime { get; set; }
         
         public Proceed()
         {
@@ -57,16 +60,24 @@ namespace opendeployer
         }
         private void txtbtnNo_Click(object sender, EventArgs e)
         {
-            if (rbInstallNow.Checked == true)
-            {
-                _messageBox = false;
-                ActiveForm.Close();
-            }
+            _messageBox = false;
+            ActiveForm.Close();
+           
         }
         private void txtbtnYes_Click(object sender, EventArgs e)
         {
-            _messageBox = true;
-            ActiveForm.Close();
+            if (rbInstallNow.Checked == true)
+            {
+                _messageBox = true;
+                ActiveForm.Close();
+            }
+            else if (rbInstallLaterDate.Checked == true)
+            {
+                _scheduledInstall = true;
+                _scheduledInstallDate = dtPicker.Value.ToShortDateString();
+                _scheduledInstallTime = dtPicker.Value.ToShortTimeString();
+                ActiveForm.Close();
+            }
         }
         private void getLogo()
         {

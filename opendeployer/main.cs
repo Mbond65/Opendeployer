@@ -25,6 +25,9 @@ namespace opendeployer
         private string _sqlpassword;
         private string _sqlserver;
         private string _companyName;
+        private bool _scheduledInstall;
+        private string _scheduledInstallDate;
+        private string _scheduledInstallTime;
 
         public Main()
         {
@@ -59,22 +62,44 @@ namespace opendeployer
 
             try
             {
-                checkApplicationLocalDir();
-                getInstaller();
-                extractInstaller();
-                runInstaller();
-                //sendEmailUser();
-                deleteInstaller();
-                writeEventLog(_applicationName + " installed successfully", EventLogEntryType.Information);
-                notifyUserComplete();                
+                if (_scheduledInstall == false)
+                {
+                    installNow();
+                }
+                else if (_scheduledInstall == true)
+                {
+                    installScheduledDate();
+                }                            
             }
             catch (Exception ex)
             {
                 writeEventLog(ex.Message);
-                updateGUIDRegistryKey(false);
+                updateGUIDRegistryKey(0);
                 writeSQLDB(ex.Message);
                 Environment.Exit(1);
             }
+        }
+        private void installNow()
+        {
+            checkApplicationLocalDir();
+            getInstaller();
+            extractInstaller();
+            runInstaller();
+            //sendEmailUser();
+            deleteInstaller();
+            writeEventLog(_applicationName + " installed successfully", EventLogEntryType.Information);
+            notifyUserComplete();
+        }
+        private void installScheduledDate()
+        {
+            checkApplicationLocalDir();
+            getInstaller();
+            createTask();
+            updateGUIDRegistryKey(3);
+        }
+        private void createTask()
+        {
+
         }
         private void checkXMLFile()
         {
@@ -287,7 +312,12 @@ namespace opendeployer
             {
                 Environment.Exit(1);
             }
-                
+            else if (msgBox._scheduledInstall == true)
+            {
+                _scheduledInstall = msgBox._scheduledInstall;
+                _scheduledInstallDate = msgBox._scheduledInstallDate;
+                _scheduledInstallTime = msgBox._scheduledInstallTime;
+            }
         }
         private void runInstaller()
         {
@@ -330,7 +360,7 @@ namespace opendeployer
                 lblStatus.Text = "Status: Complete";
                 pbMain.Value = 100;
                 TaskbarProgress.SetValue(this.Handle, 100, 100);
-                updateGUIDRegistryKey(true);
+                updateGUIDRegistryKey(1);
                 writeSQLDB("Install Successfully");
             }
             else
@@ -338,7 +368,7 @@ namespace opendeployer
                 lblStatus.Text = "Status: Failed";
                 pbMain.Value = 0;
                 TaskbarProgress.SetValue(this.Handle, 100, 100);
-                updateGUIDRegistryKey(false);
+                updateGUIDRegistryKey(0);
                 writeSQLDB("Failed to install");             
             }         
 
@@ -351,10 +381,10 @@ namespace opendeployer
 
             Environment.Exit(1);
         }
-        private void updateGUIDRegistryKey(bool installed)
+        private void updateGUIDRegistryKey(int installCode)
         {
             RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Opendeployer", true);
-            key.SetValue(_applicationGuid, Convert.ToInt32(installed), RegistryValueKind.DWord);
+            key.SetValue(_applicationGuid, installCode , RegistryValueKind.DWord);
         }
         private int getInstallCode()
         {
