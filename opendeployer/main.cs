@@ -28,6 +28,7 @@ namespace opendeployer
         private bool _scheduledInstall;
         private string _scheduledInstallDate;
         private string _scheduledInstallTime;
+        private string _opendeployerLocalPath = String.Concat(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"\Opendeployer\");
 
         public Main()
         {
@@ -35,7 +36,6 @@ namespace opendeployer
         }
         private void Main_Load(object sender, EventArgs e)
         {
-
             try
             {
                 checkXMLFile();
@@ -81,8 +81,8 @@ namespace opendeployer
         }
         private void installNow()
         {
-            checkApplicationLocalDir();
-            getInstaller();
+            checkApplicationLocalDir(_applicationLocalLocation);
+            getInstaller(_applicationLocalLocation);
             extractInstaller();
             runInstaller();
             //sendEmailUser();
@@ -92,10 +92,13 @@ namespace opendeployer
         }
         private void installScheduledDate()
         {
-            checkApplicationLocalDir();
-            getInstaller();
+            checkApplicationLocalDir(_opendeployerLocalPath);
+            checkApplicationLocalDir(_applicationLocalLocation);
+            getInstaller(_applicationLocalLocation);
             createTask();
             updateGUIDRegistryKey(3);
+            writeEventLog(_applicationName + " is scheduled for install", EventLogEntryType.Information);
+            writeSQLDB("Awaiting install");
         }
         private void createTask()
         {
@@ -262,23 +265,23 @@ namespace opendeployer
                 }
             }
         }
-        private void checkApplicationLocalDir()
+        private void checkApplicationLocalDir(string path)
         {
             lblStatus.Text = "Status: Creating application directory";
             pbMain.Visible = true;
             Application.DoEvents();
 
-            if (Directory.Exists(_applicationLocalLocation) == true)
+            if (Directory.Exists(path) == true)
             {
-                Directory.Delete(_applicationLocalLocation, true);
-                Directory.CreateDirectory(_applicationLocalLocation);
+                Directory.Delete(path, true);
+                Directory.CreateDirectory(path);
             }
             else
             {
-                Directory.CreateDirectory(_applicationLocalLocation);
+                Directory.CreateDirectory(path);
             }
         }        
-        private void getInstaller()
+        private void getInstaller(string path)
         {
             lblStatus.Text = "Status: Downloading installer";
             pbMain.Value = 20;
@@ -287,7 +290,7 @@ namespace opendeployer
 
             using (WebClient client = new WebClient())
             {
-                client.DownloadFile(_applicationInstallerLocation, String.Concat(_applicationLocalLocation, @"\", _applicationName, ".zip"));
+                client.DownloadFile(_applicationInstallerLocation, String.Concat(path, @"\", _applicationName, ".zip"));
             }
         }
         private void extractInstaller()
@@ -469,7 +472,7 @@ namespace opendeployer
             SqlConnection sqlConn = new SqlConnection(conSettings.ConnectionString);
             SqlCommand sqlComm = new SqlCommand();
             sqlComm = sqlConn.CreateCommand();
-            sqlComm.CommandText = @"INSERT INTO deployments (guid, name, version, installcode, message, date, time, hostname, hostos, hostip) VALUES (@guid, @name, @version, @installcode, @message, @date, @time, @hostname, @hostos, @hostip)";
+            sqlComm.CommandText = @"INSERT INTO deployments (guid, name, version, installcode, message, date, time, hostname, hostos, hostip, scheduledinstalldate, scheduledinstalltime) VALUES (@guid, @name, @version, @installcode, @message, @date, @time, @hostname, @hostos, @hostip, @scheduledinstalldate, @scheduledinstalltime)";
             sqlComm.Parameters.Add("guid", SqlDbType.UniqueIdentifier).Value = applicationGuid;
             sqlComm.Parameters.Add("name", SqlDbType.NVarChar).Value = _applicationName;
             sqlComm.Parameters.Add("version", SqlDbType.Float).Value = _applicationVersion;
@@ -480,6 +483,8 @@ namespace opendeployer
             sqlComm.Parameters.Add("hostname", SqlDbType.NVarChar).Value = Dns.GetHostName();
             sqlComm.Parameters.Add("hostos", SqlDbType.NVarChar).Value = GetOSFriendlyName();
             sqlComm.Parameters.Add("hostip", SqlDbType.NVarChar).Value = GetLocalIPAddress();
+            sqlComm.Parameters.Add("scheduledinstalldate", SqlDbType.Date).Value = _scheduledInstallDate ?? null;
+            sqlComm.Parameters.Add("scheduledinstalltime", SqlDbType.Time).Value = _scheduledInstallTime ?? null;
 
             try
             {

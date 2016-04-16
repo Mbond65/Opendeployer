@@ -73,6 +73,7 @@ namespace opendeployer
             }
             else if (rbInstallLaterDate.Checked == true)
             {
+                _messageBox = true;
                 _scheduledInstall = true;
                 _scheduledInstallDate = dtPicker.Value.ToShortDateString();
                 _scheduledInstallTime = dtPicker.Value.ToShortTimeString();
