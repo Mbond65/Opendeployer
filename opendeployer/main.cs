@@ -81,7 +81,7 @@ namespace opendeployer
         }
         private void installNow()
         {
-            checkApplicationLocalDir(_applicationLocalLocation);
+            checkApplicationLocalDir(_applicationLocalLocation, true);
             getInstaller(_applicationLocalLocation);
             extractInstaller();
             runInstaller();
@@ -92,13 +92,20 @@ namespace opendeployer
         }
         private void installScheduledDate()
         {
-            checkApplicationLocalDir(_opendeployerLocalPath);
-            checkApplicationLocalDir(_applicationLocalLocation);
+            checkApplicationLocalDir(_opendeployerLocalPath, false);
+            checkApplicationLocalDir(_applicationLocalLocation, true);
             getInstaller(_applicationLocalLocation);
+            copyOpenDeployerFiles();
             createTask();
             updateGUIDRegistryKey(3);
             writeEventLog(_applicationName + " is scheduled for install", EventLogEntryType.Information);
             writeSQLDB("Awaiting install");
+        }
+        private void copyOpenDeployerFiles()
+        {
+            File.Copy("Opendeployer.exe", _opendeployerLocalPath + @"\opendeployer.exe", true);
+            File.Copy("software.xml", _opendeployerLocalPath + @"\" + _applicationGuid + ".xml", true);
+            File.Copy("config.xml", _opendeployerLocalPath + @"\config.xml", true);
         }
         private void createTask()
         {
@@ -265,13 +272,13 @@ namespace opendeployer
                 }
             }
         }
-        private void checkApplicationLocalDir(string path)
+        private void checkApplicationLocalDir(string path, bool deleteDir)
         {
             lblStatus.Text = "Status: Creating application directory";
             pbMain.Visible = true;
             Application.DoEvents();
 
-            if (Directory.Exists(path) == true)
+            if (Directory.Exists(path) == true && deleteDir == true)
             {
                 Directory.Delete(path, true);
                 Directory.CreateDirectory(path);
