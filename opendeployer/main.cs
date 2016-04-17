@@ -122,10 +122,9 @@ namespace opendeployer
                 td.Principal.RunLevel = TaskRunLevel.Highest;
 
                 td.Triggers.Add(new TimeTrigger { Enabled = true,
-                                                  StartBoundary = DateTime.Now });
+                                                  StartBoundary = Convert.ToDateTime(_scheduledInstallDate).Add(TimeSpan.Parse(_scheduledInstallTime)) });
 
-                // Convert.ToDateTime(_scheduledInstallDate , _scheduledInstallTime)
-                td.Actions.Add(new ExecAction(_opendeployerLocalPath + @"\opendeployer.exe", "testing", null));
+                td.Actions.Add(new ExecAction(_opendeployerLocalPath + "opendeployer.exe", "-install " + _applicationGuid, null));
 
                 ts.RootFolder.RegisterTaskDefinition("Opendeployer - " + _applicationName, td);
 
