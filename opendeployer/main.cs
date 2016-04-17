@@ -11,6 +11,7 @@ using System.Drawing;
 using System.Data.SqlClient;
 using System.Net.Sockets;
 using System.Management;
+using Microsoft.Win32.TaskScheduler;
 
 namespace opendeployer
 {
@@ -109,7 +110,26 @@ namespace opendeployer
         }
         private void createTask()
         {
+            using (TaskService ts = new TaskService())
+            {
+                TaskDefinition td = ts.NewTask();
+                td.RegistrationInfo.Description = "Scheduled install of " + _applicationName;
+                td.RegistrationInfo.Author = "Opendeployer";
+                td.RegistrationInfo.Date = DateTime.Now;
 
+                td.Settings.StartWhenAvailable = true;
+
+                td.Principal.RunLevel = TaskRunLevel.Highest;
+
+                td.Triggers.Add(new TimeTrigger { Enabled = true,
+                                                  StartBoundary = DateTime.Now });
+
+                // Convert.ToDateTime(_scheduledInstallDate , _scheduledInstallTime)
+                td.Actions.Add(new ExecAction(_opendeployerLocalPath + @"\opendeployer.exe", "testing", null));
+
+                ts.RootFolder.RegisterTaskDefinition("Opendeployer - " + _applicationName, td);
+
+            }
         }
         private void checkXMLFile()
         {
