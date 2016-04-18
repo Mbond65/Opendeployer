@@ -86,6 +86,7 @@ namespace opendeployer
                 writeSQLDB(ex.Message);
                 Environment.Exit(1);
             }
+
         }
         private void installNow()
         {
@@ -114,13 +115,18 @@ namespace opendeployer
         }
         private void doScheduledInstall()
         {
-
+            extractInstaller();
+            runInstaller();
+            //sendEmailUser();
+            deleteInstaller();
+            writeEventLog(_applicationName + " installed successfully", EventLogEntryType.Information);
+            notifyUserComplete();
         }
         private void notifyScheduledTaskComplete()
         {
             msgboxForm msgbox = new msgboxForm();
             msgbox._message = _applicationName + @" has been downloaded to your computer ready for install on the following date " +
-                _scheduledInstallDate + ". If you have any questions please email helpdesk@Calfordseaden.co.uk";
+                _scheduledInstallDate;
 
             msgbox.ShowDialog();
         }
@@ -355,15 +361,17 @@ namespace opendeployer
             }
         }        
         private void getInstaller(string path)
-        {
-            lblStatus.Text = "Status: Downloading installer";
+        {            
             pbMain.Value = 20;
             TaskbarProgress.SetValue(this.Handle, 20, 100);
             Application.DoEvents();
 
             using (WebClient client = new WebClient())
             {
-                client.DownloadFile(_applicationInstallerLocation, String.Concat(path, @"\", _applicationName, ".zip"));
+                client.DownloadProgressChanged += new DownloadProgressChangedEventHandler((sender, e) => downloadProgressBar(sender, e, pbMain, lblStatus));
+                client.DownloadFileAsync(new Uri(_applicationInstallerLocation), String.Concat(path, @"\", _applicationName, ".zip"));
+
+                while (client.IsBusy) { Application.DoEvents(); }
             }
         }
         private void extractInstaller()
@@ -516,7 +524,7 @@ namespace opendeployer
 
             return false;
         }
-        public static string GetLocalIPAddress()
+        private static string getLocalIPAddress()
         {
             var host = Dns.GetHostEntry(Dns.GetHostName());
             foreach (var ip in host.AddressList)
@@ -528,7 +536,7 @@ namespace opendeployer
             }
             throw new Exception("Local IP Address Not Found!");
         }
-        public static string GetOSFriendlyName()
+        private static string getOSFriendlyName()
         {
             string result = string.Empty;
             ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT Caption FROM Win32_OperatingSystem");
@@ -538,6 +546,11 @@ namespace opendeployer
                 break;
             }
             return result;
+        }
+        private static void downloadProgressBar(object sender, DownloadProgressChangedEventArgs e, ProgressBar pbMain, Label lblStatus)
+        {           
+            lblStatus.Text = "Status: Downloading (" + (e.BytesReceived / 1000) + "/KB of " + (e.TotalBytesToReceive / 1000) + "/KB)";
+            pbMain.Value = e.ProgressPercentage;
         }
         private void writeSQLDB(string msg)
         {
@@ -557,8 +570,8 @@ namespace opendeployer
             sqlComm.Parameters.Add("date", SqlDbType.Date).Value = DateTime.Now.ToShortDateString();
             sqlComm.Parameters.Add("time", SqlDbType.Time).Value = DateTime.Now.ToShortTimeString();
             sqlComm.Parameters.Add("hostname", SqlDbType.NVarChar).Value = Dns.GetHostName();
-            sqlComm.Parameters.Add("hostos", SqlDbType.NVarChar).Value = GetOSFriendlyName();
-            sqlComm.Parameters.Add("hostip", SqlDbType.NVarChar).Value = GetLocalIPAddress();
+            sqlComm.Parameters.Add("hostos", SqlDbType.NVarChar).Value = getOSFriendlyName();
+            sqlComm.Parameters.Add("hostip", SqlDbType.NVarChar).Value = getLocalIPAddress();
             sqlComm.Parameters.Add("scheduledinstalldate", SqlDbType.Date).Value = _scheduledInstallDate ?? null;
             sqlComm.Parameters.Add("scheduledinstalltime", SqlDbType.Time).Value = _scheduledInstallTime ?? null;
 
