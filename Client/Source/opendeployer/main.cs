@@ -26,9 +26,11 @@ namespace opendeployer
         private string _sqlpassword;
         private string _sqlserver;
         private string _companyName;
+        private bool _isScheduledInstall;
         private bool _scheduledInstall;
         private string _scheduledInstallDate;
         private string _scheduledInstallTime;
+        private string _scheduledInstallGUID;
         private string _opendeployerLocalPath = String.Concat(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"\Opendeployer\");
 
         public Main()
@@ -39,6 +41,7 @@ namespace opendeployer
         {
             try
             {
+                checkScheduledInstall();
                 checkXMLFile();
                 assignArguementVariables();
                 getLogo();
@@ -70,7 +73,11 @@ namespace opendeployer
                 else if (_scheduledInstall == true)
                 {
                     installScheduledDate();
-                }                            
+                }
+                else if (_isScheduledInstall == true)
+                {
+                    doScheduledInstall();
+                }                           
             }
             catch (Exception ex)
             {
@@ -101,6 +108,21 @@ namespace opendeployer
             updateGUIDRegistryKey(3);
             writeEventLog(_applicationName + " is scheduled for install", EventLogEntryType.Information);
             writeSQLDB("Awaiting install");
+            notifyScheduledTaskComplete();
+
+            Environment.Exit(0);
+        }
+        private void doScheduledInstall()
+        {
+
+        }
+        private void notifyScheduledTaskComplete()
+        {
+            msgboxForm msgbox = new msgboxForm();
+            msgbox._message = _applicationName + @" has been downloaded to your computer ready for install on the following date " +
+                _scheduledInstallDate + ". If you have any questions please email helpdesk@Calfordseaden.co.uk";
+
+            msgbox.ShowDialog();
         }
         private void copyOpenDeployerFiles()
         {
@@ -141,7 +163,15 @@ namespace opendeployer
         private void assignArguementVariables()
         {
             XmlDocument doc = new XmlDocument();
-            doc.Load("Software.xml");
+
+            if (_isScheduledInstall == false)
+            {
+                doc.Load("Software.xml");
+            }
+            else
+            {
+                doc.Load(_scheduledInstallGUID + ".xml");
+            }
 
             XmlNode node = doc.DocumentElement.SelectSingleNode("/Software/applicationName");
             XmlNode node2 = doc.DocumentElement.SelectSingleNode("/Software/applicationInstallLocation");
@@ -219,6 +249,18 @@ namespace opendeployer
 
             EventLog.WriteEntry(sSource, sEvent, type);
         }
+        private void checkScheduledInstall()
+        {
+            string[] Args = Environment.GetCommandLineArgs();
+            foreach (string Arg in Args)
+            {
+                if (Arg == "-install")
+                {
+                    _isScheduledInstall = true;
+                    _scheduledInstallGUID = Args[2];
+                }
+            }
+        }
         private void checkOpenDeployerRegistry()
         {
             RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Opendeployer");
@@ -245,6 +287,11 @@ namespace opendeployer
             else if ((int)guidValue == 0)
             {
                 writeEventLog("Application expereienced a failure when installing this package previously, please test on the machine manually and then remove the registry key containing the GUID for this package", EventLogEntryType.Error);
+                Environment.Exit(1);
+            }
+            else if ((int)guidValue == 3 && _isScheduledInstall == false)
+            {
+                writeEventLog("Application is scheduled for install", EventLogEntryType.Information);
                 Environment.Exit(1);
             }
 
@@ -330,22 +377,25 @@ namespace opendeployer
         }
         private void askUser()
         {
-            Proceed msgBox = new Proceed();
-            msgBox._applicationName = _applicationName;
-            msgBox._companyName = _companyName;
-
-            formflash.FlashWindowEx(msgBox);            
-            msgBox.ShowDialog();
-
-            if (msgBox._messageBox == false)
+            if (_isScheduledInstall == false)
             {
-                Environment.Exit(1);
-            }
-            else if (msgBox._scheduledInstall == true)
-            {
-                _scheduledInstall = msgBox._scheduledInstall;
-                _scheduledInstallDate = msgBox._scheduledInstallDate;
-                _scheduledInstallTime = msgBox._scheduledInstallTime;
+                Proceed msgBox = new Proceed();
+                msgBox._applicationName = _applicationName;
+                msgBox._companyName = _companyName;
+
+                formflash.FlashWindowEx(msgBox);
+                msgBox.ShowDialog();
+
+                if (msgBox._messageBox == false)
+                {
+                    Environment.Exit(1);
+                }
+                else if (msgBox._scheduledInstall == true)
+                {
+                    _scheduledInstall = msgBox._scheduledInstall;
+                    _scheduledInstallDate = msgBox._scheduledInstallDate;
+                    _scheduledInstallTime = msgBox._scheduledInstallTime;
+                }
             }
         }
         private void runInstaller()
