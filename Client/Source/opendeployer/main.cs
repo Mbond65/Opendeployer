@@ -47,9 +47,9 @@ namespace opendeployer
                 assignArguementVariables();
                 getLogo();
                 getHelpText();
-                setDetailLabels();
-                checkComputerIDRegistry();
+                setDetailLabels();               
                 checkOpenDeployerRegistry();
+                checkComputerIDRegistry();
                 checkApplicationRegistryEntry();
                 checkApplicationNotInstalled();
                 checkApplicationNotInstalled64();
@@ -126,17 +126,18 @@ namespace opendeployer
         }
         private void notifyScheduledTaskComplete()
         {
-            msgboxForm msgbox = new msgboxForm();
-            msgbox._message = _applicationName + @" has been downloaded to your computer ready for install on the following date " +
-                _scheduledInstallDate;
-
-            msgbox.ShowDialog();
+            
         }
         private void copyOpenDeployerFiles()
         {
             File.Copy("Opendeployer.exe", _opendeployerLocalPath + @"\opendeployer.exe", true);
             File.Copy("software.xml", _opendeployerLocalPath + @"\" + _applicationGuid + ".xml", true);
             File.Copy("config.xml", _opendeployerLocalPath + @"\config.xml", true);
+
+            if (File.Exists("logo.jpg"))
+            {
+                File.Copy("logo.jpg", _opendeployerLocalPath + @"\logo.jpg", true);
+            }
         }
         private void createTask()
         {
@@ -148,6 +149,8 @@ namespace opendeployer
                 td.RegistrationInfo.Date = DateTime.Now;
 
                 td.Settings.StartWhenAvailable = true;
+                td.Settings.StopIfGoingOnBatteries = false;
+                td.Settings.DisallowStartIfOnBatteries = false;
 
                 td.Principal.RunLevel = TaskRunLevel.Highest;
 
@@ -156,14 +159,14 @@ namespace opendeployer
 
                 td.Actions.Add(new ExecAction(_opendeployerLocalPath + "opendeployer.exe", "-install " + _applicationGuid, null));
 
-                ts.RootFolder.RegisterTaskDefinition("Opendeployer - " + _applicationName, td);
+                ts.RootFolder.RegisterTaskDefinition("Opendeployer - " + _applicationGuid, td);
 
             }
         }
         private void checkXMLFile()
         {
             bool fileExists = File.Exists("Software.xml");
-            if (!fileExists)
+            if (!fileExists && _isScheduledInstall == false)
             {
                 throw new Exception("Software XML file does not exist");
             }
@@ -178,7 +181,7 @@ namespace opendeployer
             }
             else
             {
-                doc.Load(_scheduledInstallGUID + ".xml");
+                doc.Load(_opendeployerLocalPath + @"\" + _scheduledInstallGUID + ".xml");
             }
 
             XmlNode node = doc.DocumentElement.SelectSingleNode("/Software/applicationName");
@@ -192,9 +195,16 @@ namespace opendeployer
             _applicationLocalLocation = node3.InnerText;
             _applicationVersion = node4.InnerText;
             _applicationGuid = node5.InnerText;
-                       
-            doc.Load("config.xml");
 
+            if (_isScheduledInstall == false)
+            {
+                doc.Load("config.xml");
+            }
+            else
+            {
+                doc.Load(_opendeployerLocalPath + @"\config.xml");
+            }
+            
             node = doc.DocumentElement.SelectSingleNode("/Config/installerName");
             node2 = doc.DocumentElement.SelectSingleNode("/Config/SQL/username");
             node3 = doc.DocumentElement.SelectSingleNode("/Config/SQL/password");
@@ -207,7 +217,16 @@ namespace opendeployer
         }
         private void getLogo()
         {
-            bool logoFileExists = File.Exists("logo.jpg");
+            bool logoFileExists;
+
+            if (_isScheduledInstall == false)
+            {
+                logoFileExists = File.Exists("logo.jpg");
+            }
+            else
+            {
+                logoFileExists = File.Exists(_opendeployerLocalPath + @"\" + "logo.jpg");
+            }
 
             if (logoFileExists)
             {
@@ -218,7 +237,14 @@ namespace opendeployer
         private void getHelpText()
         {
             XmlDocument doc = new XmlDocument();
-            doc.Load("Config.xml");
+            if (_isScheduledInstall == false)
+            {
+                doc.Load("config.xml");
+            }
+            else
+            {
+                doc.Load(_opendeployerLocalPath + @"\config.xml");
+            }
 
             XmlNode node = doc.DocumentElement.SelectSingleNode("/Config/helpText");
 
@@ -447,7 +473,15 @@ namespace opendeployer
             Application.DoEvents();
 
             XmlDocument doc = new XmlDocument();
-            doc.Load("Software.xml");
+
+            if (_isScheduledInstall == false)
+            {
+                doc.Load("Software.xml");
+            }
+            else
+            {
+                doc.Load(_opendeployerLocalPath + @"\" + _scheduledInstallGUID + ".xml");
+            }
 
             XmlNode nodes = doc.DocumentElement.SelectSingleNode("/Software/CommandLines");
 
