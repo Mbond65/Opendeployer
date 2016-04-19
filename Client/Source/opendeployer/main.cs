@@ -306,17 +306,31 @@ namespace opendeployer
             }
             else if ((int)guidValue == 1)
             {
-                writeEventLog("Application is already installed", EventLogEntryType.Information);
+                writeEventLog(_applicationName + " is already installed", EventLogEntryType.Information);
                 Environment.Exit(0);
             }
             else if ((int)guidValue == 0)
             {
-                writeEventLog("Application expereienced a failure when installing this package previously, please test on the machine manually and then remove the registry key containing the GUID for this package", EventLogEntryType.Error);
+                writeEventLog(_applicationName + " expereienced a failure when installing previously, please test on the machine manually and then remove the registry key containing the GUID for this package", EventLogEntryType.Error);
                 Environment.Exit(1);
             }
             else if ((int)guidValue == 3 && _isScheduledInstall == false)
             {
-                writeEventLog("Application is scheduled for install", EventLogEntryType.Information);
+                writeEventLog(_applicationName + " is scheduled for install", EventLogEntryType.Information);
+                Environment.Exit(1);
+            }
+            else if ((int)guidValue == 4)
+            {
+                writeEventLog(_applicationName + " failed to install when scheduled", EventLogEntryType.Error);
+                updateSQLDB("Failed to install at the scheduled time");
+                updateGUIDRegistryKey(0);
+                Environment.Exit(1);
+            }
+            else if ((int)guidValue == 5)
+            {
+                writeEventLog(_applicationName + " was installed when scheduled", EventLogEntryType.Information);
+                updateSQLDB("Installed successfully at the scheduled time");
+                updateGUIDRegistryKey(1);
                 Environment.Exit(1);
             }
 
@@ -466,7 +480,16 @@ namespace opendeployer
                 lblStatus.Text = "Status: Complete";
                 pbMain.Value = 100;
                 TaskbarProgress.SetValue(this.Handle, 100, 100);
-                updateGUIDRegistryKey(1);
+
+                if (_isScheduledInstall == false)
+                {
+                    updateGUIDRegistryKey(1);
+                }
+                else
+                {
+                    updateGUIDRegistryKey(5);
+                }
+
                 writeSQLDB("Install Successfully");
             }
             else
@@ -474,7 +497,16 @@ namespace opendeployer
                 lblStatus.Text = "Status: Failed";
                 pbMain.Value = 0;
                 TaskbarProgress.SetValue(this.Handle, 100, 100);
-                updateGUIDRegistryKey(0);
+
+                if (_isScheduledInstall == false)
+                {
+                    updateGUIDRegistryKey(0);
+                }
+                else
+                {
+                    updateGUIDRegistryKey(4);
+                }
+
                 writeSQLDB("Failed to install");             
             }         
 
@@ -605,6 +637,35 @@ namespace opendeployer
             catch (Exception ex)
             {
                 writeEventLog(ex.Message, EventLogEntryType.Error);
+            }
+        }
+        private void updateSQLDB(string msg)
+        {
+            ConnectionStringSettings conSettings = new ConnectionStringSettings("opendeployer", "Server=" + _sqlserver + ";Database=opendeployer;User Id=" + _sqlusername + ";Password=" + _sqlpassword + "");
+
+            Guid applicationGuid = new Guid(_applicationGuid);
+            Guid computerID = new Guid(_computerID);
+
+            SqlConnection sqlConn = new SqlConnection(conSettings.ConnectionString);
+            SqlCommand sqlComm = new SqlCommand();
+            sqlComm = sqlConn.CreateCommand();
+            sqlComm.CommandText = @"UPDATE deployments Set installcode=@installcode, message=@message WHERE guid=@guid AND computerID=@computerID";
+            sqlComm.Parameters.Add("guid", SqlDbType.UniqueIdentifier).Value = applicationGuid;
+            sqlComm.Parameters.Add("computerID", SqlDbType.UniqueIdentifier).Value = computerID;
+            sqlComm.Parameters.Add("installcode", SqlDbType.Int).Value = getInstallCode();
+            sqlComm.Parameters.Add("message", SqlDbType.NVarChar).Value = msg;         
+            sqlComm.Parameters.Add("computerID", SqlDbType.UniqueIdentifier).Value = computerID;
+
+            try
+            {
+                sqlConn.Open();
+                sqlComm.ExecuteNonQuery();
+                sqlConn.Close();
+            }
+            catch (Exception ex)
+            {
+                writeEventLog(ex.Message, EventLogEntryType.Error);
+                Environment.Exit(1);
             }
         }
     }
