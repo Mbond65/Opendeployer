@@ -12,6 +12,7 @@ using System.Data.SqlClient;
 using System.Net.Sockets;
 using System.Management;
 using Microsoft.Win32.TaskScheduler;
+using Ionic.Zip;
 
 namespace opendeployer
 {
@@ -32,6 +33,8 @@ namespace opendeployer
         private string _scheduledInstallTime;
         private string _scheduledInstallGUID;
         private string _computerID;
+        private long _extractBytesTransferred;
+        private long _extractBytesTotal;
         private string _opendeployerLocalPath = String.Concat(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"\Opendeployer\");
 
         public Main()
@@ -421,9 +424,7 @@ namespace opendeployer
         }        
         private void getInstaller(string path)
         {            
-            pbMain.Value = 20;
             TaskbarProgress.SetValue(this.Handle, 20, 100);
-            Application.DoEvents();
 
             using (WebClient client = new WebClient())
             {
@@ -435,12 +436,14 @@ namespace opendeployer
         }
         private void extractInstaller()
         {
-            lblStatus.Text = "Status: Extracting installer";
-            pbMain.Value = 40;
             TaskbarProgress.SetValue(this.Handle, 40, 100);
-            Application.DoEvents();
 
-            System.IO.Compression.ZipFile.ExtractToDirectory(String.Concat(_applicationLocalLocation, @"\", _applicationName, ".zip"), String.Concat(_applicationLocalLocation, @"\", _applicationName));
+            bwWorkerExtractFile.RunWorkerAsync();
+
+            while (bwWorkerExtractFile.IsBusy)
+            {
+                Application.DoEvents();
+            }
         }
         private void askUser()
         {
@@ -701,6 +704,34 @@ namespace opendeployer
                 writeEventLog(ex.Message, EventLogEntryType.Error);
                 Environment.Exit(1);
             }
+        }
+        private void bwWorkerExtractFile_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+        {
+            using (ZipFile zip = ZipFile.Read(String.Concat(_applicationLocalLocation, @"\", _applicationName, ".zip")))
+            {
+                zip.ExtractProgress += extractFileExtractProgress;
+                zip.ExtractAll(String.Concat(_applicationLocalLocation, @"\", _applicationName), ExtractExistingFileAction.OverwriteSilently);
+            }
+
+        }
+        private void extractFileExtractProgress(object sender, Ionic.Zip.ExtractProgressEventArgs e)
+        {
+            _extractBytesTotal = e.TotalBytesToTransfer;
+            _extractBytesTransferred = e.BytesTransferred;
+
+            if (e.TotalBytesToTransfer != 0)
+            {
+                bwWorkerExtractFile.ReportProgress(Convert.ToInt32(((int)e.BytesTransferred * 100.0 / (int)e.TotalBytesToTransfer)));
+            }
+            else
+            {
+                bwWorkerExtractFile.ReportProgress(0);
+            }
+        }
+        private void bwWorkerExtractFile_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
+        {
+            lblStatus.Text = "Status: Extracting (" + _extractBytesTransferred + " of " + _extractBytesTotal + ")";
+            pbMain.Value = e.ProgressPercentage;
         }
     }
 }
