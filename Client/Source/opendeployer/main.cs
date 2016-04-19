@@ -31,6 +31,7 @@ namespace opendeployer
         private string _scheduledInstallDate;
         private string _scheduledInstallTime;
         private string _scheduledInstallGUID;
+        private string _computerID;
         private string _opendeployerLocalPath = String.Concat(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"\Opendeployer\");
 
         public Main()
@@ -47,6 +48,7 @@ namespace opendeployer
                 getLogo();
                 getHelpText();
                 setDetailLabels();
+                checkComputerIDRegistry();
                 checkOpenDeployerRegistry();
                 checkApplicationRegistryEntry();
                 checkApplicationNotInstalled();
@@ -254,6 +256,23 @@ namespace opendeployer
             }
 
             EventLog.WriteEntry(sSource, sEvent, type);
+        }
+        private void checkComputerIDRegistry()
+        {
+            RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Opendeployer", true);
+            var guidValue = key.GetValue("ComputerID");
+
+            if (guidValue == null)
+            {
+                string guid = Guid.NewGuid().ToString();
+                key.SetValue("ComputerID", guid, RegistryValueKind.String);
+
+                _computerID = guid;
+            }
+            else
+            {
+                _computerID = guidValue.ToString();
+            }
         }
         private void checkScheduledInstall()
         {
@@ -556,12 +575,13 @@ namespace opendeployer
         {
             ConnectionStringSettings conSettings = new ConnectionStringSettings("opendeployer", "Server=" + _sqlserver + ";Database=opendeployer;User Id=" + _sqlusername + ";Password=" + _sqlpassword + "");
 
-            Guid applicationGuid = new Guid("74e1da23-7d1a-48bf-b860-4e6658c0558f");
+            Guid applicationGuid = new Guid(_applicationGuid);
+            Guid computerID = new Guid(_computerID);
 
             SqlConnection sqlConn = new SqlConnection(conSettings.ConnectionString);
             SqlCommand sqlComm = new SqlCommand();
             sqlComm = sqlConn.CreateCommand();
-            sqlComm.CommandText = @"INSERT INTO deployments (guid, name, version, installcode, message, date, time, hostname, hostos, hostip, scheduledinstalldate, scheduledinstalltime) VALUES (@guid, @name, @version, @installcode, @message, @date, @time, @hostname, @hostos, @hostip, @scheduledinstalldate, @scheduledinstalltime)";
+            sqlComm.CommandText = @"INSERT INTO deployments (guid, name, version, installcode, message, date, time, hostname, hostos, hostip, scheduledinstalldate, scheduledinstalltime, computerID) VALUES (@guid, @name, @version, @installcode, @message, @date, @time, @hostname, @hostos, @hostip, @scheduledinstalldate, @scheduledinstalltime, @computerID)";
             sqlComm.Parameters.Add("guid", SqlDbType.UniqueIdentifier).Value = applicationGuid;
             sqlComm.Parameters.Add("name", SqlDbType.NVarChar).Value = _applicationName;
             sqlComm.Parameters.Add("version", SqlDbType.Float).Value = _applicationVersion;
@@ -574,6 +594,7 @@ namespace opendeployer
             sqlComm.Parameters.Add("hostip", SqlDbType.NVarChar).Value = getLocalIPAddress();
             sqlComm.Parameters.Add("scheduledinstalldate", SqlDbType.Date).Value = _scheduledInstallDate ?? DateTime.MinValue.ToShortDateString();
             sqlComm.Parameters.Add("scheduledinstalltime", SqlDbType.Time).Value = _scheduledInstallTime ?? DateTime.MinValue.ToShortTimeString();
+            sqlComm.Parameters.Add("computerID", SqlDbType.UniqueIdentifier).Value = computerID;
 
             try
             {
