@@ -229,7 +229,7 @@ namespace opendeployer
         }
         private void writeEventLog(string errorMessage)
         {
-            string sSource = _companyName;
+            string sSource = _companyName ?? "Opendeployer";
             string sLog = "Application";
             string sEvent = errorMessage;
 
@@ -243,7 +243,7 @@ namespace opendeployer
         }
         private void writeEventLog(string errorMessage, EventLogEntryType type)
         {
-            string sSource = _companyName;
+            string sSource = _companyName ?? "Opendeployer";
             string sLog = "Application";
             string sEvent = errorMessage;
 
@@ -262,7 +262,7 @@ namespace opendeployer
             {
                 if (Arg == "-install")
                 {
-                    _isScheduledInstall = true;
+                    _isScheduledInstall = true;                   
                     _scheduledInstallGUID = Args[2];
                 }
             }
@@ -572,8 +572,8 @@ namespace opendeployer
             sqlComm.Parameters.Add("hostname", SqlDbType.NVarChar).Value = Dns.GetHostName();
             sqlComm.Parameters.Add("hostos", SqlDbType.NVarChar).Value = getOSFriendlyName();
             sqlComm.Parameters.Add("hostip", SqlDbType.NVarChar).Value = getLocalIPAddress();
-            sqlComm.Parameters.Add("scheduledinstalldate", SqlDbType.Date).Value = _scheduledInstallDate ?? null;
-            sqlComm.Parameters.Add("scheduledinstalltime", SqlDbType.Time).Value = _scheduledInstallTime ?? null;
+            sqlComm.Parameters.Add("scheduledinstalldate", SqlDbType.Date).Value = _scheduledInstallDate ?? DateTime.MinValue.ToShortDateString();
+            sqlComm.Parameters.Add("scheduledinstalltime", SqlDbType.Time).Value = _scheduledInstallTime ?? DateTime.MinValue.ToShortTimeString();
 
             try
             {
