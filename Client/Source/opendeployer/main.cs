@@ -155,15 +155,17 @@ namespace opendeployer
                 td.RegistrationInfo.Author = "Opendeployer";
                 td.RegistrationInfo.Date = DateTime.Now;
 
+
+
                 td.Settings.StartWhenAvailable = true;
                 td.Settings.StopIfGoingOnBatteries = false;
                 td.Settings.DisallowStartIfOnBatteries = false;
-                td.Settings.DeleteExpiredTaskAfter = new TimeSpan(1, 0, 0, 0);
+                td.Settings.DeleteExpiredTaskAfter = new TimeSpan(1, 0, 0);
 
                 td.Principal.RunLevel = TaskRunLevel.Highest;
 
                 td.Triggers.Add(new TimeTrigger { Enabled = true,
-                                                  StartBoundary = Convert.ToDateTime(_scheduledInstallDate).Add(TimeSpan.Parse(_scheduledInstallTime)) });
+                                                  StartBoundary = Convert.ToDateTime(_scheduledInstallDate).Add(TimeSpan.Parse(_scheduledInstallTime)) , EndBoundary = DateTime.Now.AddMonths(1) });
 
                 td.Actions.Add(new ExecAction(_opendeployerLocalPath + "opendeployer.exe", "-install " + _applicationGuid, null));
 
@@ -712,7 +714,6 @@ namespace opendeployer
             sqlComm.Parameters.Add("computerID", SqlDbType.UniqueIdentifier).Value = computerID;
             sqlComm.Parameters.Add("installcode", SqlDbType.Int).Value = getInstallCode();
             sqlComm.Parameters.Add("message", SqlDbType.NVarChar).Value = msg;         
-            sqlComm.Parameters.Add("computerID", SqlDbType.UniqueIdentifier).Value = computerID;
 
             try
             {
