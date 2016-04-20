@@ -37,6 +37,7 @@
             this.lblApplicationVersion = new MetroFramework.Controls.MetroLabel();
             this.pbLoading = new System.Windows.Forms.PictureBox();
             this.bwWorkerExtractFile = new System.ComponentModel.BackgroundWorker();
+            this.bwWorkerRunInstall = new System.ComponentModel.BackgroundWorker();
             ((System.ComponentModel.ISupportInitialize)(this.pbLogo)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbLoading)).BeginInit();
             this.SuspendLayout();
@@ -110,6 +111,12 @@
             this.bwWorkerExtractFile.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bwWorkerExtractFile_DoWork);
             this.bwWorkerExtractFile.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.bwWorkerExtractFile_ProgressChanged);
             // 
+            // bwWorkerRunInstall
+            // 
+            this.bwWorkerRunInstall.WorkerReportsProgress = true;
+            this.bwWorkerRunInstall.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bwWorkerRunInstall_DoWork);
+            this.bwWorkerRunInstall.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.bwWorkerRunInstall_ProgressChanged);
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -145,6 +152,7 @@
         private MetroFramework.Controls.MetroLabel lblApplicationVersion;
         private System.Windows.Forms.PictureBox pbLoading;
         private System.ComponentModel.BackgroundWorker bwWorkerExtractFile;
+        private System.ComponentModel.BackgroundWorker bwWorkerRunInstall;
     }
 }
 

@@ -35,6 +35,8 @@ namespace opendeployer
         private string _computerID;
         private long _extractBytesTransferred;
         private long _extractBytesTotal;
+        private int _commandLinesTotal;
+        private int _commandLinesRan;
         private string _opendeployerLocalPath = String.Concat(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"\Opendeployer\");
 
         public Main()
@@ -469,40 +471,16 @@ namespace opendeployer
             }
         }
         private void runInstaller()
-        {
-            lblStatus.Text = "Status: Running installer";
-            pbMain.Value = 80;
+        {            
             TaskbarProgress.SetValue(this.Handle, 80, 100);
-            Application.DoEvents();
 
-            XmlDocument doc = new XmlDocument();
+            bwWorkerRunInstall.RunWorkerAsync();
 
-            if (_isScheduledInstall == false)
+            while (bwWorkerRunInstall.IsBusy)
             {
-                doc.Load("Software.xml");
+                Application.DoEvents();
             }
-            else
-            {
-                doc.Load(_opendeployerLocalPath + @"\" + _scheduledInstallGUID + ".xml");
-            }
-
-            XmlNode nodes = doc.DocumentElement.SelectSingleNode("/Software/CommandLines");
-
-            foreach (XmlNode node in nodes.ChildNodes)
-            {                
-                ProcessStartInfo startInfo = new ProcessStartInfo();
-                startInfo.CreateNoWindow = false;
-                startInfo.UseShellExecute = false;
-                startInfo.FileName = @node.FirstChild.InnerText;
-                startInfo.WindowStyle = ProcessWindowStyle.Hidden;
-                startInfo.Arguments = @node.LastChild.InnerText;
-
-
-                using (Process exeProcess = Process.Start(startInfo))
-                {
-                    exeProcess.WaitForExit();
-                }
-            }
+            
         }
         private void deleteInstaller()
         {
@@ -714,7 +692,7 @@ namespace opendeployer
             }
 
         }
-        private void extractFileExtractProgress(object sender, Ionic.Zip.ExtractProgressEventArgs e)
+        private void extractFileExtractProgress(object sender, ExtractProgressEventArgs e)
         {
             _extractBytesTotal = e.TotalBytesToTransfer;
             _extractBytesTransferred = e.BytesTransferred;
@@ -731,6 +709,48 @@ namespace opendeployer
         private void bwWorkerExtractFile_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
         {
             lblStatus.Text = "Status: Extracting (" + _extractBytesTransferred + " of " + _extractBytesTotal + ")";
+            pbMain.Value = e.ProgressPercentage;
+        }
+        private void bwWorkerRunInstall_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+        {
+            XmlDocument doc = new XmlDocument();
+
+            if (_isScheduledInstall == false)
+            {
+                doc.Load("Software.xml");
+            }
+            else
+            {
+                doc.Load(_opendeployerLocalPath + @"\" + _scheduledInstallGUID + ".xml");
+            }
+
+            XmlNode nodes = doc.DocumentElement.SelectSingleNode("/Software/CommandLines");
+
+            _commandLinesTotal = nodes.ChildNodes.Count;
+            _commandLinesRan = 0;
+
+            bwWorkerRunInstall.ReportProgress(0);
+
+            foreach (XmlNode node in nodes.ChildNodes)
+            {
+                ProcessStartInfo startInfo = new ProcessStartInfo();
+                startInfo.CreateNoWindow = false;
+                startInfo.UseShellExecute = false;
+                startInfo.FileName = @node.FirstChild.InnerText;
+                startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                startInfo.Arguments = @node.LastChild.InnerText;
+
+                using (Process exeProcess = Process.Start(startInfo))
+                {
+                    exeProcess.WaitForExit();
+                }
+                _commandLinesRan += 1;
+                bwWorkerRunInstall.ReportProgress(Convert.ToInt32(_commandLinesRan * 100.0 / _commandLinesTotal));
+            }
+        }
+        private void bwWorkerRunInstall_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
+        {
+            lblStatus.Text = "Status: Running installer (" + _commandLinesRan + " of " + _commandLinesTotal + ")";
             pbMain.Value = e.ProgressPercentage;
         }
     }
