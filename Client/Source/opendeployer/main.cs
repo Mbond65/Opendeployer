@@ -505,8 +505,15 @@ namespace opendeployer
         {
             pbLoading.Visible = false;
 
+            Complete msgBox = new Complete();
+            msgBox._applicationName = _applicationName;
+            msgBox._companyName = _companyName;
+
+            formflash.FlashWindowEx(msgBox);
+
             if (checkApplicationInstalled() != false && checkApplicationInstalled64() != false)
             {
+                msgBox._installedSuccessfully = true;
                 lblStatus.Text = "Status: Complete";
                 pbMain.Value = 100;
                 TaskbarProgress.SetValue(this.Handle, 100, 100);
@@ -524,6 +531,7 @@ namespace opendeployer
             }
             else
             {
+                msgBox._installedSuccessfully = false;
                 lblStatus.Text = "Status: Failed";
                 pbMain.Value = 0;
                 TaskbarProgress.SetValue(this.Handle, 100, 100);
@@ -540,11 +548,6 @@ namespace opendeployer
                 writeSQLDB("Failed to install");             
             }         
 
-            Complete msgBox = new Complete();
-            msgBox._applicationName = _applicationName;
-            msgBox._companyName = _companyName;
-
-            formflash.FlashWindowEx(msgBox);
             msgBox.ShowDialog();
 
             Environment.Exit(1);
@@ -767,7 +770,7 @@ namespace opendeployer
             XmlNode nodes = doc.DocumentElement.SelectSingleNode("/Software/CommandLines");
 
             _commandLinesTotal = nodes.ChildNodes.Count;
-            _commandLinesRan = 0;
+            _commandLinesRan = 1;
 
             bwWorkerRunInstall.ReportProgress(0);
 

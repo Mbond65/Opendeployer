@@ -17,6 +17,7 @@ namespace opendeployer
     {
         public string _applicationName { get; set; }
         public string _companyName { get; set; }
+        public bool _installedSuccessfully { get; set; }
 
         public Complete()
         {
@@ -42,7 +43,16 @@ namespace opendeployer
             XmlDocument doc = new XmlDocument();
             doc.Load("Config.xml");
 
-            XmlNode node = doc.DocumentElement.SelectSingleNode("/Config/completeMessage");
+            XmlNode node;
+
+            if (_installedSuccessfully == true)
+            {
+                node = doc.DocumentElement.SelectSingleNode("/Config/completeMessageSuccuess");
+            }
+            else
+            {
+                node = doc.DocumentElement.SelectSingleNode("/Config/completeMessageFailed");
+            }
 
             lblCompleteMessage.Text = node.InnerText;
         }
