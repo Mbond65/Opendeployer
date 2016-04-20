@@ -103,7 +103,6 @@
             this.pbLoading.Size = new System.Drawing.Size(34, 32);
             this.pbLoading.TabIndex = 6;
             this.pbLoading.TabStop = false;
-            this.pbLoading.Visible = false;
             // 
             // bwWorkerExtractFile
             // 

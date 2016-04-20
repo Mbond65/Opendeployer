@@ -11,6 +11,7 @@ using System.Drawing;
 using System.Data.SqlClient;
 using System.Net.Sockets;
 using System.Management;
+using System.Security.Principal;
 using Microsoft.Win32.TaskScheduler;
 using Ionic.Zip;
 
@@ -47,6 +48,7 @@ namespace opendeployer
         {
             try
             {
+                checkAdministrativePermissions();
                 checkScheduledInstall();
                 checkXMLFile();
                 assignArguementVariables();
@@ -288,6 +290,16 @@ namespace opendeployer
 
             EventLog.WriteEntry(sSource, sEvent, type);
         }
+        private void checkAdministrativePermissions()
+        {
+            bool isUserAdmin = IsUserAdministrator();
+
+            if (isUserAdmin == false)
+            {
+                writeEventLog("Opendeployer requires local admins permissions to function, please run as administrator", EventLogEntryType.Error);
+                Environment.Exit(1);
+            }
+        }
         private void checkComputerIDRegistry()
         {
             RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Opendeployer", true);
@@ -490,6 +502,8 @@ namespace opendeployer
         }
         private void notifyUserComplete()
         {
+            pbLoading.Visible = false;
+
             if (checkApplicationInstalled() != false && checkApplicationInstalled64() != false)
             {
                 lblStatus.Text = "Status: Complete";
@@ -589,6 +603,31 @@ namespace opendeployer
             }
 
             return false;
+        }
+        public bool IsUserAdministrator()
+        {
+            bool isAdmin;
+            WindowsIdentity user = null;
+            try
+            {
+                user = WindowsIdentity.GetCurrent();
+                WindowsPrincipal principal = new WindowsPrincipal(user);
+                isAdmin = principal.IsInRole(WindowsBuiltInRole.Administrator);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                isAdmin = false;
+            }
+            catch (Exception ex)
+            {
+                isAdmin = false;
+            }
+            finally
+            {
+                if (user != null)
+                    user.Dispose();
+            }
+            return isAdmin;
         }
         private static string getLocalIPAddress()
         {
