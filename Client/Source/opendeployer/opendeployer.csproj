@@ -71,6 +71,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="msgboxLogo.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="msgboxLogo.Designer.cs">
+      <DependentUpon>msgboxLogo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="msgbox.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="msgbox.Designer.cs">
+      <DependentUpon>msgbox.cs</DependentUpon>
+    </Compile>
     <Compile Include="complete.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -93,6 +105,12 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="msgboxLogo.resx">
+      <DependentUpon>msgboxLogo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="msgbox.resx">
+      <DependentUpon>msgbox.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="complete.resx">
       <DependentUpon>complete.cs</DependentUpon>
     </EmbeddedResource>

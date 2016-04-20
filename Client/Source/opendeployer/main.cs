@@ -158,6 +158,7 @@ namespace opendeployer
                 td.Settings.StartWhenAvailable = true;
                 td.Settings.StopIfGoingOnBatteries = false;
                 td.Settings.DisallowStartIfOnBatteries = false;
+                td.Settings.DeleteExpiredTaskAfter = new TimeSpan(1, 0, 0, 0);
 
                 td.Principal.RunLevel = TaskRunLevel.Highest;
 
