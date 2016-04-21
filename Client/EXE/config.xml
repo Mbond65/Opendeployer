@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<Config>
+	<installerName>Company name Installer</installerName>
+	<proceedMessage>An application is ready to be installed on your computer. The application will install silently in the background and you will notified when it's completed, do you want to proceed?</proceedMessage>
+	<completeMessageSuccess>The install has now been completed. Please note you may need to restart your computer before you can start using the software.</completeMessageSuccess>
+	<completeMessageFailed>Sorry the install has failed to complete successfully. The automated installer will not run anymore, IT have been notified of the problem.</completeMessageFailed>
+	<helpText>If you have any questions regarding this install please email support@example.com</helpText>
+	<SQL>
+		<username>test</username>
+		<password>Jimbob123</password>
+		<server>.\SQLExpress</server>
+	</SQL>
+</Config>
