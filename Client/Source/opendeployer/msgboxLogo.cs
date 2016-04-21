@@ -13,15 +13,21 @@ namespace opendeployer
         {
             InitializeComponent();
         }
+
         private void txtbtnOk_Click(object sender, EventArgs e)
         {
             ActiveForm.Close();
         }
+
         private void msgboxLogo_Load(object sender, EventArgs e)
         {
             getLogo();
             lblMessage.Text = _message; 
         }
+
+        /// <summary>
+        /// Gets logo if exists
+        /// </summary>
         private void getLogo()
         {
             if (File.Exists("logo.jpg"))

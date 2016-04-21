@@ -14,10 +14,12 @@ namespace opendeployer
         {
             InitializeComponent();
         }
+
         private void txtbtnOk_Click(object sender, EventArgs e)
         {
             ActiveForm.Close();
         }
+
         private void msgbox_Load(object sender, EventArgs e)
         {
             lblMessage.Text = _message;

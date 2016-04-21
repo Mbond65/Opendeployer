@@ -29,6 +29,10 @@ namespace opendeployer
         {
             Environment.Exit(0);
         }
+
+        /// <summary>
+        /// Gets logo if exists
+        /// </summary>
         private void getLogo()
         {
             if (File.Exists("logo.jpg"))
@@ -40,6 +44,10 @@ namespace opendeployer
                 pbLogo.Image = Image.FromFile(_opendeployerLocalPath + @"\" + "logo.jpg", false);
             }
         }
+
+        /// <summary>
+        /// Gets custom complete message from config file if exists
+        /// </summary>
         private void getCustomMessage()
         {
             XmlDocument doc = new XmlDocument();
@@ -66,6 +74,7 @@ namespace opendeployer
 
             lblCompleteMessage.Text = node.InnerText;
         }
+
         private void Complete_Load(object sender, EventArgs e)
         {
             lblApplicationName.Text = _applicationName + " Install Complete";
@@ -81,6 +90,11 @@ namespace opendeployer
                 Environment.Exit(1);
             }
         }
+
+        /// <summary>
+        /// Write to event log
+        /// </summary>
+        /// <param name="errorMessage"></param>
         private void writeEventLog(string errorMessage)
         {
             string sSource = _companyName;

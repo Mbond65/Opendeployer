@@ -45,6 +45,7 @@ namespace opendeployer
             }
                        
         }
+
         private void writeEventLog(string errorMessage)
         {
             string sSource = _companyName;
@@ -59,12 +60,14 @@ namespace opendeployer
 
             EventLog.WriteEntry(sSource, sEvent, EventLogEntryType.Error);
         }
+
         private void txtbtnNo_Click(object sender, EventArgs e)
         {
             _messageBox = false;
             ActiveForm.Close();
            
         }
+
         private void txtbtnYes_Click(object sender, EventArgs e)
         {
             if (rbInstallNow.Checked == true)
@@ -86,6 +89,7 @@ namespace opendeployer
                 ActiveForm.Close();
             }
         }
+
         private void getLogo()
         {
             if (File.Exists("logo.jpg"))
@@ -97,6 +101,10 @@ namespace opendeployer
                 pbLogo.Image = Image.FromFile(_opendeployerLocalPath + @"\" + "logo.jpg", false);
             }
         }
+
+        /// <summary>
+        /// Gets custom proceed message in config file if exists
+        /// </summary>
         private void getCustomMessage()
         {
             XmlDocument doc = new XmlDocument();
@@ -106,10 +114,12 @@ namespace opendeployer
 
             lblProceedMessage.Text = node.InnerText;
         }
+
         private void rbInstallLaterDate_CheckedChanged(object sender, EventArgs e)
         {
             dtPicker.Enabled = true;
         }
+
         private void rbInstallNow_CheckedChanged(object sender, EventArgs e)
         {
             dtPicker.Enabled = false;
