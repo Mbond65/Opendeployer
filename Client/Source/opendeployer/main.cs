@@ -44,6 +44,7 @@ namespace opendeployer
         {
             InitializeComponent();
         }
+
         private void Main_Load(object sender, EventArgs e)
         {
             try
@@ -97,17 +98,24 @@ namespace opendeployer
             }
 
         }
+
+        /// <summary>
+        /// Calls the methods neccessary to do an install.
+        /// </summary>
         private void installNow()
         {
             checkApplicationLocalDir(_applicationLocalLocation, true);
             getInstaller(_applicationLocalLocation);
             extractInstaller();
             runInstaller();
-            //sendEmailUser();
             deleteInstaller();
             writeEventLog(_applicationName + " installed successfully", EventLogEntryType.Information);
             notifyUserComplete();
         }
+
+        /// <summary>
+        /// Calls the methods necessary to schedule an install.
+        /// </summary>
         private void installScheduledDate()
         {
             checkApplicationLocalDir(_opendeployerLocalPath, false);
@@ -122,16 +130,23 @@ namespace opendeployer
 
             Environment.Exit(0);
         }
+
+        /// <summary>
+        /// Calls the methods necessary to do a scheduled install.
+        /// </summary>
         private void doScheduledInstall()
         {
             notifyUserInstallReady();
             extractInstaller();
             runInstaller();
-            //sendEmailUser();
             deleteInstaller();
             writeEventLog(_applicationName + " installed successfully", EventLogEntryType.Information);
             notifyUserComplete();
         }
+
+        /// <summary>
+        /// Notifies the user a scheduled install is about to take place.
+        /// </summary>
         private void notifyUserInstallReady()
         {
             msgboxLogo box = new msgboxLogo();
@@ -141,6 +156,10 @@ namespace opendeployer
 
             box.Show();
         }
+       
+        /// <summary>
+        /// Notifies the user a scheduled install has completed.
+        /// </summary>
         private void notifyScheduledTaskComplete()
         {
             msgboxLogo msgbox = new msgboxLogo();
@@ -150,6 +169,10 @@ namespace opendeployer
 
             msgbox.ShowDialog();
         }
+
+        /// <summary>
+        /// Copies binaries and config files to machine ready for a scheduled install.
+        /// </summary>
         private void copyOpenDeployerFiles()
         {
             File.Copy("Opendeployer.exe", _opendeployerLocalPath + @"\opendeployer.exe", true);
@@ -161,6 +184,10 @@ namespace opendeployer
                 File.Copy("logo.jpg", _opendeployerLocalPath + @"\logo.jpg", true);
             }
         }
+
+        /// <summary>
+        /// Creates a scheduled task.
+        /// </summary>
         private void createTask()
         {
             using (TaskService ts = new TaskService())
@@ -169,8 +196,6 @@ namespace opendeployer
                 td.RegistrationInfo.Description = "Scheduled install of " + _applicationName;
                 td.RegistrationInfo.Author = "Opendeployer";
                 td.RegistrationInfo.Date = DateTime.Now;
-
-
 
                 td.Settings.StartWhenAvailable = true;
                 td.Settings.StopIfGoingOnBatteries = false;
@@ -188,6 +213,10 @@ namespace opendeployer
 
             }
         }
+
+        /// <summary>
+        /// Checks Software.xml exists if isScheduledInstall is false.
+        /// </summary>
         private void checkXMLFile()
         {
             bool fileExists = File.Exists("Software.xml");
@@ -196,6 +225,10 @@ namespace opendeployer
                 throw new Exception("Software XML file does not exist");
             }
         }
+
+        /// <summary>
+        /// Get variables from XML config files.
+        /// </summary>
         private void assignArguementVariables()
         {
             XmlDocument doc = new XmlDocument();
@@ -240,6 +273,10 @@ namespace opendeployer
             _sqlpassword = node3.InnerText;
             _sqlserver = node4.InnerText;
         }
+
+        /// <summary>
+        /// Gets logo file from source and assigns to image control if exists.
+        /// </summary>
         private void getLogo()
         {
             if (File.Exists("logo.jpg"))
@@ -251,6 +288,10 @@ namespace opendeployer
                 pbLogo.Image = Image.FromFile(_opendeployerLocalPath + @"\" + "logo.jpg", false);
             }
         }
+
+        /// <summary>
+        /// Gets help text from config file and add it to a label control if exists.
+        /// </summary>
         private void getHelpText()
         {
             XmlDocument doc = new XmlDocument();
@@ -264,14 +305,22 @@ namespace opendeployer
             }
 
             XmlNode node = doc.DocumentElement.SelectSingleNode("/Config/helpText");
-
             lblHelpText.Text = node.InnerText;
         }
+
+        /// <summary>
+        /// Set values for detail labels.
+        /// </summary>
         private void setDetailLabels()
         {
             lblApplicationName.Text = "Application package: " + _applicationName;
             lblApplicationVersion.Text = "Version: " + _applicationVersion;
         }
+
+        /// <summary>
+        /// Writes to Application event log.
+        /// </summary>
+        /// <param name="errorMessage"></param>
         private void writeEventLog(string errorMessage)
         {
             string sSource = _companyName ?? "Opendeployer";
@@ -286,6 +335,12 @@ namespace opendeployer
 
             EventLog.WriteEntry(sSource, sEvent, EventLogEntryType.Error);
         }
+
+        /// <summary>
+        /// Writes to Application event log.
+        /// </summary>
+        /// <param name="errorMessage"></param>
+        /// <param name="type"></param>
         private void writeEventLog(string errorMessage, EventLogEntryType type)
         {
             string sSource = _companyName ?? "Opendeployer";
@@ -300,6 +355,10 @@ namespace opendeployer
 
             EventLog.WriteEntry(sSource, sEvent, type);
         }
+
+        /// <summary>
+        /// Checks the account running the application is in the local administrator security group.
+        /// </summary>
         private void checkAdministrativePermissions()
         {
             bool isUserAdmin = IsUserAdministrator();
@@ -310,6 +369,10 @@ namespace opendeployer
                 Environment.Exit(1);
             }
         }
+
+        /// <summary>
+        /// Checks a GUID for the computer it's running on exists in the registry, if not it creates and stores one.
+        /// </summary>
         private void checkComputerIDRegistry()
         {
             RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Opendeployer", true);
@@ -327,6 +390,10 @@ namespace opendeployer
                 _computerID = guidValue.ToString();
             }
         }
+
+        /// <summary>
+        /// Checks if scheduled install was called.
+        /// </summary>
         private void checkScheduledInstall()
         {
             string[] Args = Environment.GetCommandLineArgs();
@@ -339,6 +406,10 @@ namespace opendeployer
                 }
             }
         }
+
+        /// <summary>
+        /// Checks that Opendeployer registry key exists, if not then create one.
+        /// </summary>
         private void checkOpenDeployerRegistry()
         {
             RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Opendeployer");
@@ -348,6 +419,10 @@ namespace opendeployer
                 software.CreateSubKey("Opendeployer");
             }
         }
+
+        /// <summary>
+        /// Checks to see the if the deployment has already run and if it has what installcode it returned.
+        /// </summary>
         private void checkApplicationRegistryEntry()
         {
             RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Opendeployer", true);
@@ -388,28 +463,11 @@ namespace opendeployer
             }
 
         }
-        private void checkApplicationNotInstalled()
-        {
-            string registry_key = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
-            using (Microsoft.Win32.RegistryKey key = Registry.LocalMachine.OpenSubKey(registry_key))
-            {
-                foreach (string subkey_name in key.GetSubKeyNames())
-                {
-                    using (RegistryKey subkey = key.OpenSubKey(subkey_name))
-                    {
-                        string displayName = (string)subkey.GetValue("DisplayName") ?? "NULL";
-                        object version = subkey.GetValue("Version");
 
-                        if (displayName.ToLower() == _applicationName.ToLower() && (version ?? "notinstalled").ToString() == Convert.ToString(_applicationVersion))
-                        {
-                            writeEventLog("Application already installed", EventLogEntryType.Information);
-                            Environment.Exit(0);
-                        }                     
-                    }
-                }
-            }     
-        }
-        private void checkApplicationNotInstalled64()
+        /// <summary>
+        /// Iterates through the Wow6432node of the uninstall values to ensure the application isn't already installed.
+        /// </summary>
+        private void checkApplicationNotInstalled()
         {
             string registry_key64 = @"SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall";
             using (Microsoft.Win32.RegistryKey key = Registry.LocalMachine.OpenSubKey(registry_key64))
@@ -430,6 +488,37 @@ namespace opendeployer
                 }
             }
         }
+
+        /// <summary>
+        /// Iterates through the registry uninstall values to ensure the application isn't already installed.
+        /// </summary>
+        private void checkApplicationNotInstalled64()
+        {
+            string registry_key = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
+            using (Microsoft.Win32.RegistryKey key = Registry.LocalMachine.OpenSubKey(registry_key))
+            {
+                foreach (string subkey_name in key.GetSubKeyNames())
+                {
+                    using (RegistryKey subkey = key.OpenSubKey(subkey_name))
+                    {
+                        string displayName = (string)subkey.GetValue("DisplayName") ?? "NULL";
+                        object version = subkey.GetValue("Version");
+
+                        if (displayName.ToLower() == _applicationName.ToLower() && (version ?? "notinstalled").ToString() == Convert.ToString(_applicationVersion))
+                        {
+                            writeEventLog("Application already installed", EventLogEntryType.Information);
+                            Environment.Exit(0);
+                        }                     
+                    }
+                }
+            }     
+        }
+
+        /// <summary>
+        /// Create application local directory.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="deleteDir"></param>
         private void checkApplicationLocalDir(string path, bool deleteDir)
         {
             lblStatus.Text = "Status: Creating application directory";
@@ -446,6 +535,11 @@ namespace opendeployer
                 Directory.CreateDirectory(path);
             }
         }        
+
+        /// <summary>
+        /// Downloads the installer.
+        /// </summary>
+        /// <param name="path"></param>
         private void getInstaller(string path)
         {            
             TaskbarProgress.SetValue(this.Handle, 20, 100);
@@ -458,6 +552,10 @@ namespace opendeployer
                 while (client.IsBusy) { Application.DoEvents(); }
             }
         }
+
+        /// <summary>
+        /// Extracts the downloaded installer.
+        /// </summary>
         private void extractInstaller()
         {
             TaskbarProgress.SetValue(this.Handle, 40, 100);
@@ -469,6 +567,10 @@ namespace opendeployer
                 Application.DoEvents();
             }
         }
+
+        /// <summary>
+        /// Asks the user whether they would like to proceed before the install takes place.
+        /// </summary>
         private void askUser()
         {
             if (_isScheduledInstall == false)
@@ -492,6 +594,10 @@ namespace opendeployer
                 }
             }
         }
+
+        /// <summary>
+        /// For each of the command lines found in the XML file, waits for processes to finish.
+        /// </summary>
         private void runInstaller()
         {            
             TaskbarProgress.SetValue(this.Handle, 80, 100);
@@ -504,12 +610,21 @@ namespace opendeployer
             }
             
         }
+
+        /// <summary>
+        /// Deletes the local copy of the installer.
+        /// </summary>
+        /// 
         private void deleteInstaller()
         {
             lblStatus.Text = "Status: Deleting installer";
 
             Directory.Delete(_applicationLocalLocation, true);
         }
+
+        /// <summary>
+        /// Notifies the user the process has completed, write to the event log and alter registry key depending on result.
+        /// </summary>
         private void notifyUserComplete()
         {
             pbLoading.Visible = false;
@@ -561,11 +676,21 @@ namespace opendeployer
 
             Environment.Exit(1);
         }
+
+        /// <summary>
+        /// Updates the deployment registry key.
+        /// </summary>
+        /// <param name="installCode"></param>
         private void updateGUIDRegistryKey(int installCode)
         {
             RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Opendeployer", true);
             key.SetValue(_applicationGuid, installCode , RegistryValueKind.DWord);
         }
+
+        /// <summary>
+        /// Gets installer installcode from the Opendeployer key in the registry.
+        /// </summary>
+        /// <returns></returns>
         private int getInstallCode()
         {
             RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Opendeployer");
@@ -573,29 +698,12 @@ namespace opendeployer
 
             return Convert.ToInt32(installcode);
         }
+
+        /// <summary>
+        /// Verifies the application has been installed.
+        /// </summary>
+        /// <returns></returns>
         private bool checkApplicationInstalled()
-        {
-            string registry_key = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
-            using (Microsoft.Win32.RegistryKey key = Registry.LocalMachine.OpenSubKey(registry_key))
-            {
-                foreach (string subkey_name in key.GetSubKeyNames())
-                {
-                    using (RegistryKey subkey = key.OpenSubKey(subkey_name))
-                    {
-                        string displayName = (string)subkey.GetValue("DisplayName") ?? "NULL";
-                        object version = subkey.GetValue("Version");
-
-                        if (displayName.ToLower() == _applicationName.ToLower() && (version ?? "notinstalled").ToString() == Convert.ToString(_applicationVersion))
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-
-            return false;
-        }
-        private bool checkApplicationInstalled64()
         {
             string registry_key = @"SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall";
             using (Microsoft.Win32.RegistryKey key = Registry.LocalMachine.OpenSubKey(registry_key))
@@ -617,7 +725,39 @@ namespace opendeployer
 
             return false;
         }
-        public bool IsUserAdministrator()
+
+        /// <summary>
+        /// Verifies the application has been installed.
+        /// </summary>
+        /// <returns></returns>
+        private bool checkApplicationInstalled64()
+        {
+            string registry_key = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
+            using (Microsoft.Win32.RegistryKey key = Registry.LocalMachine.OpenSubKey(registry_key))
+            {
+                foreach (string subkey_name in key.GetSubKeyNames())
+                {
+                    using (RegistryKey subkey = key.OpenSubKey(subkey_name))
+                    {
+                        string displayName = (string)subkey.GetValue("DisplayName") ?? "NULL";
+                        object version = subkey.GetValue("Version");
+
+                        if (displayName.ToLower() == _applicationName.ToLower() && (version ?? "notinstalled").ToString() == Convert.ToString(_applicationVersion))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Checks user running the application is a local administrator.
+        /// </summary>
+        /// <returns></returns>
+        private bool IsUserAdministrator()
         {
             bool isAdmin;
             WindowsIdentity user = null;
@@ -642,6 +782,11 @@ namespace opendeployer
             }
             return isAdmin;
         }
+
+        /// <summary>
+        /// Gets local IP address of the machine running the application.
+        /// </summary>
+        /// <returns></returns>
         private static string getLocalIPAddress()
         {
             var host = Dns.GetHostEntry(Dns.GetHostName());
@@ -654,6 +799,11 @@ namespace opendeployer
             }
             throw new Exception("Local IP Address Not Found!");
         }
+
+        /// <summary>
+        /// Gets hostname of the machine running the application.
+        /// </summary>
+        /// <returns></returns>
         private static string getOSFriendlyName()
         {
             string result = string.Empty;
@@ -665,11 +815,11 @@ namespace opendeployer
             }
             return result;
         }
-        private static void downloadProgressBar(object sender, DownloadProgressChangedEventArgs e, ProgressBar pbMain, Label lblStatus)
-        {           
-            lblStatus.Text = "Status: Downloading (" + (e.BytesReceived / 1000) + "/KB of " + (e.TotalBytesToReceive / 1000) + "/KB)";
-            pbMain.Value = e.ProgressPercentage;
-        }
+        
+        /// <summary>
+        /// Writes to deployment table.
+        /// </summary>
+        /// <param name="msg"></param>
         private void writeSQLDB(string msg)
         {
             ConnectionStringSettings conSettings = new ConnectionStringSettings("opendeployer", "Server=" + _sqlserver + ";Database=opendeployer;User Id=" + _sqlusername + ";Password=" + _sqlpassword + "");
@@ -706,6 +856,11 @@ namespace opendeployer
                 writeEventLog(ex.Message, EventLogEntryType.Error);
             }
         }
+
+        /// <summary>
+        /// Updates deployment table.
+        /// </summary>
+        /// <param name="msg"></param>
         private void updateSQLDB(string msg)
         {
             ConnectionStringSettings conSettings = new ConnectionStringSettings("opendeployer", "Server=" + _sqlserver + ";Database=opendeployer;User Id=" + _sqlusername + ";Password=" + _sqlpassword + "");
@@ -734,6 +889,13 @@ namespace opendeployer
                 Environment.Exit(1);
             }
         }
+
+        private static void downloadProgressBar(object sender, DownloadProgressChangedEventArgs e, ProgressBar pbMain, Label lblStatus)
+        {
+            lblStatus.Text = "Status: Downloading (" + (e.BytesReceived / 1000) + "/KB of " + (e.TotalBytesToReceive / 1000) + "/KB)";
+            pbMain.Value = e.ProgressPercentage;
+        }
+
         private void bwWorkerExtractFile_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
         {
             using (ZipFile zip = ZipFile.Read(String.Concat(_applicationLocalLocation, @"\", _applicationName, ".zip")))
@@ -743,6 +905,7 @@ namespace opendeployer
             }
 
         }
+
         private void extractFileExtractProgress(object sender, ExtractProgressEventArgs e)
         {
             _extractBytesTotal = e.TotalBytesToTransfer;
@@ -757,11 +920,13 @@ namespace opendeployer
                 bwWorkerExtractFile.ReportProgress(0);
             }
         }
+
         private void bwWorkerExtractFile_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
         {
             lblStatus.Text = "Status: Extracting (" + _extractBytesTransferred + " of " + _extractBytesTotal + ")";
             pbMain.Value = e.ProgressPercentage;
         }
+
         private void bwWorkerRunInstall_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
         {
             XmlDocument doc = new XmlDocument();
@@ -799,6 +964,7 @@ namespace opendeployer
                 bwWorkerRunInstall.ReportProgress(Convert.ToInt32(_commandLinesRan * 100.0 / _commandLinesTotal));
             }
         }
+
         private void bwWorkerRunInstall_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
         {
             lblStatus.Text = "Status: Running installer (" + _commandLinesRan + " of " + _commandLinesTotal + ")";
