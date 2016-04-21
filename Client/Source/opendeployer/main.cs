@@ -124,6 +124,7 @@ namespace opendeployer
         }
         private void doScheduledInstall()
         {
+            notifyUserInstallReady();
             extractInstaller();
             runInstaller();
             //sendEmailUser();
@@ -131,9 +132,23 @@ namespace opendeployer
             writeEventLog(_applicationName + " installed successfully", EventLogEntryType.Information);
             notifyUserComplete();
         }
+        private void notifyUserInstallReady()
+        {
+            msgboxLogo box = new msgboxLogo();
+            box._message = _applicationName + " will now install";
+
+            formflash.FlashWindowEx(box);
+
+            box.Show();
+        }
         private void notifyScheduledTaskComplete()
         {
-            
+            msgboxLogo msgbox = new msgboxLogo();
+            msgbox._message = "Download complete, the installer will run at the time and date you specified. If your computer isn't switched on at the time of install , the installer will run whenever possible.";
+
+            formflash.FlashWindowEx(msgbox);
+
+            msgbox.ShowDialog();
         }
         private void copyOpenDeployerFiles()
         {
@@ -502,9 +517,7 @@ namespace opendeployer
             Complete msgBox = new Complete();
             msgBox._applicationName = _applicationName;
             msgBox._companyName = _companyName;
-
-            formflash.FlashWindowEx(msgBox);
-
+         
             if (checkApplicationInstalled() != false && checkApplicationInstalled64() != false)
             {
                 msgBox._installedSuccessfully = true;
@@ -540,7 +553,9 @@ namespace opendeployer
                 }
 
                 writeSQLDB("Failed to install");             
-            }         
+            }
+
+            formflash.FlashWindowEx(msgBox);
 
             msgBox.ShowDialog();
 

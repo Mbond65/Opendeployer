@@ -78,6 +78,11 @@ namespace opendeployer
                 _scheduledInstall = true;
                 _scheduledInstallDate = dtPicker.Value.ToShortDateString();
                 _scheduledInstallTime = dtPicker.Value.ToShortTimeString();
+
+                msgboxLogo msgbox = new msgboxLogo();
+                msgbox._message = "The installer will now download to your computer ready for install on : " + _scheduledInstallDate + " at " + _scheduledInstallTime;
+                msgbox.ShowDialog();
+
                 ActiveForm.Close();
             }
         }

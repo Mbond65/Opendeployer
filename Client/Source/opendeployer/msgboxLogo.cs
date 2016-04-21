@@ -19,7 +19,8 @@ namespace opendeployer
         }
         private void msgboxLogo_Load(object sender, EventArgs e)
         {
-            lblMessage.Text = _message;
+            getLogo();
+            lblMessage.Text = _message; 
         }
         private void getLogo()
         {
@@ -32,5 +33,6 @@ namespace opendeployer
                 pbLogo.Image = Image.FromFile(_opendeployerLocalPath + @"\" + "logo.jpg", false);
             }
         }
+
     }
 }

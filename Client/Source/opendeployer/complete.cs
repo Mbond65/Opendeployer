@@ -43,7 +43,15 @@ namespace opendeployer
         private void getCustomMessage()
         {
             XmlDocument doc = new XmlDocument();
-            doc.Load("Config.xml");
+
+            if (File.Exists("config.xml"))
+            {
+                doc.Load("Config.xml");
+            }
+            else if (File.Exists(_opendeployerLocalPath + @"\" + "config.xml"))
+            {
+                doc.Load(_opendeployerLocalPath + @"\" + "config.xml");
+            }
 
             XmlNode node;
 
