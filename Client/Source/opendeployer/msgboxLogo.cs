@@ -7,6 +7,7 @@ namespace opendeployer
     public partial class msgboxLogo : MetroFramework.Forms.MetroForm
     {
         public string _message;
+        public string _opendeployerLocalPath = String.Concat(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"\Opendeployer\");
 
         public msgboxLogo()
         {
@@ -22,12 +23,13 @@ namespace opendeployer
         }
         private void getLogo()
         {
-            bool logoFileExists = File.Exists("logo.jpg");
-
-            if (logoFileExists)
+            if (File.Exists("logo.jpg"))
             {
-                Image logo = Image.FromFile("logo.jpg", false);
-                pbLogo.Image = logo;
+                pbLogo.Image = Image.FromFile("logo.jpg", false);
+            }
+            else if (File.Exists(_opendeployerLocalPath + @"\" + "logo.jpg"))
+            {
+                pbLogo.Image = Image.FromFile(_opendeployerLocalPath + @"\" + "logo.jpg", false);
             }
         }
     }

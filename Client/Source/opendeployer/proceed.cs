@@ -21,7 +21,8 @@ namespace opendeployer
         public bool _scheduledInstall { get; set; }
         public string _scheduledInstallDate { get; set; }
         public string _scheduledInstallTime { get; set; }
-        
+        public string _opendeployerLocalPath = String.Concat(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"\Opendeployer\");
+
         public Proceed()
         {
             InitializeComponent();
@@ -82,12 +83,13 @@ namespace opendeployer
         }
         private void getLogo()
         {
-            bool logoFileExists = File.Exists("logo.jpg");
-
-            if (logoFileExists)
+            if (File.Exists("logo.jpg"))
             {
-                Image logo = Image.FromFile("logo.jpg", false);
-                pbLogo.Image = logo;
+                pbLogo.Image = Image.FromFile("logo.jpg", false);
+            }
+            else if (File.Exists(_opendeployerLocalPath + @"\" + "logo.jpg"))
+            {
+                pbLogo.Image = Image.FromFile(_opendeployerLocalPath + @"\" + "logo.jpg", false);
             }
         }
         private void getCustomMessage()

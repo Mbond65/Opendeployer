@@ -227,21 +227,13 @@ namespace opendeployer
         }
         private void getLogo()
         {
-            bool logoFileExists;
-
-            if (_isScheduledInstall == false)
+            if (File.Exists("logo.jpg"))
             {
-                logoFileExists = File.Exists("logo.jpg");
+                pbLogo.Image = Image.FromFile("logo.jpg", false);
             }
-            else
+            else if (File.Exists(_opendeployerLocalPath + @"\" + "logo.jpg"))
             {
-                logoFileExists = File.Exists(_opendeployerLocalPath + @"\" + "logo.jpg");
-            }
-
-            if (logoFileExists)
-            {
-                Image logo = Image.FromFile("logo.jpg", false);                
-                pbLogo.Image = logo;
+                pbLogo.Image = Image.FromFile(_opendeployerLocalPath + @"\" + "logo.jpg", false);
             }
         }
         private void getHelpText()
