@@ -15,13 +15,6 @@ C:\Users\Michael\Desktop\Projects\opendeployer - webapp\opendeployer\bin\opendep
 C:\Users\Michael\Desktop\Projects\opendeployer - webapp\opendeployer\bin\opendeployer.dll
 C:\Users\Michael\Desktop\Projects\opendeployer - webapp\opendeployer\bin\opendeployer.pdb
 C:\Users\Michael\Desktop\Projects\opendeployer - webapp\opendeployer\bin\Antlr3.Runtime.dll
-C:\Users\Michael\Desktop\Projects\opendeployer - webapp\opendeployer\bin\Microsoft.AI.Agent.Intercept.dll
-C:\Users\Michael\Desktop\Projects\opendeployer - webapp\opendeployer\bin\Microsoft.AI.DependencyCollector.dll
-C:\Users\Michael\Desktop\Projects\opendeployer - webapp\opendeployer\bin\Microsoft.AI.PerfCounterCollector.dll
-C:\Users\Michael\Desktop\Projects\opendeployer - webapp\opendeployer\bin\Microsoft.AI.ServerTelemetryChannel.dll
-C:\Users\Michael\Desktop\Projects\opendeployer - webapp\opendeployer\bin\Microsoft.AI.Web.dll
-C:\Users\Michael\Desktop\Projects\opendeployer - webapp\opendeployer\bin\Microsoft.AI.WindowsServer.dll
-C:\Users\Michael\Desktop\Projects\opendeployer - webapp\opendeployer\bin\Microsoft.ApplicationInsights.dll
 C:\Users\Michael\Desktop\Projects\opendeployer - webapp\opendeployer\bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll
 C:\Users\Michael\Desktop\Projects\opendeployer - webapp\opendeployer\bin\Microsoft.Web.Infrastructure.dll
 C:\Users\Michael\Desktop\Projects\opendeployer - webapp\opendeployer\bin\Newtonsoft.Json.dll
@@ -34,11 +27,6 @@ C:\Users\Michael\Desktop\Projects\opendeployer - webapp\opendeployer\bin\System.
 C:\Users\Michael\Desktop\Projects\opendeployer - webapp\opendeployer\bin\System.Web.Webpages.Razor.dll
 C:\Users\Michael\Desktop\Projects\opendeployer - webapp\opendeployer\bin\WebGrease.dll
 C:\Users\Michael\Desktop\Projects\opendeployer - webapp\opendeployer\bin\Antlr3.Runtime.pdb
-C:\Users\Michael\Desktop\Projects\opendeployer - webapp\opendeployer\bin\Microsoft.AI.DependencyCollector.xml
-C:\Users\Michael\Desktop\Projects\opendeployer - webapp\opendeployer\bin\Microsoft.AI.ServerTelemetryChannel.xml
-C:\Users\Michael\Desktop\Projects\opendeployer - webapp\opendeployer\bin\Microsoft.AI.Web.xml
-C:\Users\Michael\Desktop\Projects\opendeployer - webapp\opendeployer\bin\Microsoft.AI.WindowsServer.xml
-C:\Users\Michael\Desktop\Projects\opendeployer - webapp\opendeployer\bin\Microsoft.ApplicationInsights.xml
 C:\Users\Michael\Desktop\Projects\opendeployer - webapp\opendeployer\bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.xml
 C:\Users\Michael\Desktop\Projects\opendeployer - webapp\opendeployer\bin\Newtonsoft.Json.xml
 C:\Users\Michael\Desktop\Projects\opendeployer - webapp\opendeployer\bin\System.Web.Optimization.xml
