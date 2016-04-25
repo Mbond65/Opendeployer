@@ -38,6 +38,7 @@ namespace opendeployer
         private long _extractBytesTotal;
         private int _commandLinesTotal;
         private int _commandLinesRan;
+        private int _opendeployerVersion = 2;
         private string _opendeployerLocalPath = String.Concat(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"\Opendeployer\");
 
         public Main()
@@ -57,6 +58,7 @@ namespace opendeployer
                 getHelpText();
                 setDetailLabels();               
                 checkOpenDeployerRegistry();
+                checkOpenDeployerVersionRegistry();
                 checkComputerIDRegistry();
                 checkApplicationRegistryEntry();
                 checkApplicationNotInstalled();
@@ -421,6 +423,17 @@ namespace opendeployer
         }
 
         /// <summary>
+        /// Create opendeployer version registry value.
+        /// </summary>
+        private void checkOpenDeployerVersionRegistry()
+        {
+            RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Opendeployer", true);
+
+            var versionValue = key.GetValue("Client Version");
+            key.SetValue("Client Version", _opendeployerVersion, RegistryValueKind.DWord);            
+        }
+
+        /// <summary>
         /// Checks to see the if the deployment has already run and if it has what installcode it returned.
         /// </summary>
         private void checkApplicationRegistryEntry()
@@ -527,7 +540,7 @@ namespace opendeployer
 
             if (Directory.Exists(path) == true && deleteDir == true)
             {
-                Directory.Delete(path, true);
+                deleteDirectory(path);
                 Directory.CreateDirectory(path);
             }
             else
@@ -888,6 +901,29 @@ namespace opendeployer
                 writeEventLog(ex.Message, EventLogEntryType.Error);
                 Environment.Exit(1);
             }
+        }
+
+        /// <summary>
+        /// Delete files and folder in specified directory.
+        /// </summary>
+        /// <param name="target_dir"></param>
+        private static void deleteDirectory(string target_dir)
+        {
+            string[] files = Directory.GetFiles(target_dir);
+            string[] dirs = Directory.GetDirectories(target_dir);
+
+            foreach (string file in files)
+            {
+                File.SetAttributes(file, FileAttributes.Normal);
+                File.Delete(file);
+            }
+
+            foreach (string dir in dirs)
+            {
+                deleteDirectory(dir);
+            }
+
+            Directory.Delete(target_dir, false);
         }
 
         private static void downloadProgressBar(object sender, DownloadProgressChangedEventArgs e, ProgressBar pbMain, Label lblStatus)
