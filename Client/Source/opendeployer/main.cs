@@ -56,8 +56,9 @@ namespace opendeployer
                 assignArguementVariables();
                 getLogo();
                 getHelpText();
-                setDetailLabels();               
+                setDetailLabels();                
                 checkOpenDeployerRegistry();
+                checkMultiInstall();
                 checkOpenDeployerVersionRegistry();
                 checkComputerIDRegistry();
                 checkApplicationRegistryEntry();
@@ -356,6 +357,29 @@ namespace opendeployer
             }
 
             EventLog.WriteEntry(sSource, sEvent, type);
+        }
+
+        /// <summary>
+        /// Checks the application hasn't already been install on another machine.
+        /// </summary>
+        private void checkMultiInstall()
+        {
+            if (_isScheduledInstall != true)
+            {
+                XmlDocument doc = new XmlDocument();
+                doc.Load("config.xml");
+
+                XmlNode node = doc.DocumentElement.SelectSingleNode("/Config/preventMultiInstall");
+
+                if (node.InnerText == "true")
+                {
+                    if (checkInstallSQLDB() == true)
+                    {
+                        throw new Exception("Application has already been installed on another computer with the same user name");
+                    }
+                }
+
+            }
         }
 
         /// <summary>
@@ -843,7 +867,7 @@ namespace opendeployer
             SqlConnection sqlConn = new SqlConnection(conSettings.ConnectionString);
             SqlCommand sqlComm = new SqlCommand();
             sqlComm = sqlConn.CreateCommand();
-            sqlComm.CommandText = @"INSERT INTO deployments (guid, name, version, installcode, message, date, time, hostname, hostos, hostip, scheduledinstalldate, scheduledinstalltime, computerID) VALUES (@guid, @name, @version, @installcode, @message, @date, @time, @hostname, @hostos, @hostip, @scheduledinstalldate, @scheduledinstalltime, @computerID)";
+            sqlComm.CommandText = @"INSERT INTO deployments (guid, name, version, installcode, message, date, time, hostname, hostos, hostip, scheduledinstalldate, scheduledinstalltime, computerID, username) VALUES (@guid, @name, @version, @installcode, @message, @date, @time, @hostname, @hostos, @hostip, @scheduledinstalldate, @scheduledinstalltime, @computerID, @username)";
             sqlComm.Parameters.Add("guid", SqlDbType.UniqueIdentifier).Value = applicationGuid;
             sqlComm.Parameters.Add("name", SqlDbType.NVarChar).Value = _applicationName;
             sqlComm.Parameters.Add("version", SqlDbType.Float).Value = _applicationVersion;
@@ -857,6 +881,7 @@ namespace opendeployer
             sqlComm.Parameters.Add("scheduledinstalldate", SqlDbType.Date).Value = _scheduledInstallDate ?? DateTime.MinValue.ToShortDateString();
             sqlComm.Parameters.Add("scheduledinstalltime", SqlDbType.Time).Value = _scheduledInstallTime ?? DateTime.MinValue.ToShortTimeString();
             sqlComm.Parameters.Add("computerID", SqlDbType.UniqueIdentifier).Value = computerID;
+            sqlComm.Parameters.Add("username", SqlDbType.NVarChar).Value = Environment.UserName;
 
             try
             {
@@ -901,6 +926,49 @@ namespace opendeployer
                 writeEventLog(ex.Message, EventLogEntryType.Error);
                 Environment.Exit(1);
             }
+        }
+
+        /// <summary>
+        /// Checks application not already installed for user.
+        /// </summary>
+        /// <returns></returns>
+        private bool checkInstallSQLDB()
+        {
+
+            ConnectionStringSettings conSettings = new ConnectionStringSettings("opendeployer", "Server=" + _sqlserver + ";Database=opendeployer;User Id=" + _sqlusername + ";Password=" + _sqlpassword + "");
+                       
+            try
+            {
+                using (SqlConnection sqlConn = new SqlConnection(conSettings.ConnectionString))
+                {
+                    sqlConn.Open();
+
+                    using (SqlCommand sqlComm = new SqlCommand("SELECT * FROM  Deployments WHERE guid=@guid AND username=@username", sqlConn))
+                    {
+                        Guid applicationGuid = new Guid(_applicationGuid);
+                        sqlComm.Parameters.Add("guid", SqlDbType.UniqueIdentifier).Value = applicationGuid;
+                        sqlComm.Parameters.Add("username", SqlDbType.NVarChar).Value = Environment.UserName;
+
+                        using (SqlDataReader rdr = sqlComm.ExecuteReader())
+                        {
+                            while (rdr.Read())
+                            {
+                                if (rdr.HasRows == true)
+                                {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                writeEventLog(ex.Message, EventLogEntryType.Error);
+                Environment.Exit(1);
+            }
+
+            return false;
         }
 
         /// <summary>
