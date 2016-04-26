@@ -94,14 +94,15 @@
             // rbInstallNow
             // 
             this.rbInstallNow.AutoSize = true;
+            this.rbInstallNow.Checked = true;
             this.rbInstallNow.Location = new System.Drawing.Point(167, 148);
             this.rbInstallNow.Name = "rbInstallNow";
             this.rbInstallNow.Size = new System.Drawing.Size(80, 15);
             this.rbInstallNow.TabIndex = 7;
+            this.rbInstallNow.TabStop = true;
             this.rbInstallNow.Text = "Install now";
             this.rbInstallNow.UseSelectable = true;
             this.rbInstallNow.CheckedChanged += new System.EventHandler(this.rbInstallNow_CheckedChanged);
-            this.rbInstallNow.Checked = true;
             // 
             // rbInstallLaterDate
             // 
@@ -116,16 +117,17 @@
             // 
             // dtPicker
             // 
+            this.dtPicker.CustomFormat = "MMMMdd yyyy hh:mm tt";
+            this.dtPicker.Enabled = false;
+            this.dtPicker.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
             this.dtPicker.Location = new System.Drawing.Point(165, 215);
+            this.dtPicker.MaxDate = new System.DateTime(2016, 5, 26, 14, 26, 50, 325);
+            this.dtPicker.MinDate = new System.DateTime(2016, 4, 26, 14, 26, 50, 323);
             this.dtPicker.Name = "dtPicker";
             this.dtPicker.ShowUpDown = true;
             this.dtPicker.Size = new System.Drawing.Size(200, 20);
             this.dtPicker.TabIndex = 10;
-            this.dtPicker.Enabled = false;
-            this.dtPicker.MinDate = System.DateTime.Now;
-            this.dtPicker.MaxDate = System.DateTime.Now.AddMonths(1);
-            this.dtPicker.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
-            this.dtPicker.CustomFormat = "MMMMdd yyyy hh:mm tt";
+            this.dtPicker.Value = new System.DateTime(2016, 4, 26, 14, 26, 50, 323);
             // 
             // Proceed
             // 
@@ -140,6 +142,7 @@
             this.Controls.Add(this.lblApplicationName);
             this.Controls.Add(this.txtbtnNo);
             this.Controls.Add(this.txtbtnYes);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "Proceed";
             this.Resizable = false;

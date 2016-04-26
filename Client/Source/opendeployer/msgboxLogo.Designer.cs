@@ -75,6 +75,7 @@
             this.Controls.Add(this.pbLogo);
             this.Controls.Add(this.lblMessage);
             this.Controls.Add(this.txtbtnOk);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "msgboxLogo";
             this.Resizable = false;

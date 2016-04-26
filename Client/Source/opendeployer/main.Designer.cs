@@ -128,6 +128,7 @@
             this.Controls.Add(this.lblStatus);
             this.Controls.Add(this.lblHelpText);
             this.Controls.Add(this.pbMain);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "Main";
             this.Resizable = false;

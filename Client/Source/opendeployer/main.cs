@@ -50,6 +50,7 @@ namespace opendeployer
         {
             try
             {
+                checkDotNetVersion();
                 checkAdministrativePermissions();
                 checkScheduledInstall();
                 checkXMLFile();
@@ -358,6 +359,18 @@ namespace opendeployer
 
             EventLog.WriteEntry(sSource, sEvent, type);
         }
+
+        /// <summary>
+        /// Checks the machine the application is running on meets the .Net 4.5 requirement.
+        /// </summary>
+        /// <returns></returns>
+        private void checkDotNetVersion()
+        {
+            if (checkDotNet45() == false)
+            {
+                throw new Exception("Opendeployer requires .Net 4.5 or higher, this computer does not meet the requirement.");
+            }
+        }     
 
         /// <summary>
         /// Checks the application hasn't already been install on another machine.
@@ -670,7 +683,7 @@ namespace opendeployer
             msgBox._applicationName = _applicationName;
             msgBox._companyName = _companyName;
          
-            if (checkApplicationInstalled() != false && checkApplicationInstalled64() != false)
+            if (checkApplicationInstalled() != false || checkApplicationInstalled64() != false)
             {
                 msgBox._installedSuccessfully = true;
                 lblStatus.Text = "Status: Complete";
@@ -992,6 +1005,24 @@ namespace opendeployer
             }
 
             Directory.Delete(target_dir, false);
+        }
+
+        /// <summary>
+        /// Checks the machine the application is running on meets the .Net 4.5 requirement.
+        /// </summary>
+        /// <returns></returns>
+        private static bool checkDotNet45()
+        {
+            using (RegistryKey ndpKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32).OpenSubKey("SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v4\\Full\\"))
+            {
+                int releaseKey = Convert.ToInt32(ndpKey.GetValue("Release"));
+                if ((releaseKey >= 378389))
+                {
+                    return true;
+                }
+            }
+            
+            return false;
         }
 
         private static void downloadProgressBar(object sender, DownloadProgressChangedEventArgs e, ProgressBar pbMain, Label lblStatus)
