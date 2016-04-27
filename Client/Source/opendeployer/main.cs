@@ -386,12 +386,18 @@ namespace opendeployer
 
                 if (node.InnerText == "true")
                 {
-                    if (checkInstallSQLDB() == true)
+                    try
                     {
-                        throw new Exception("Application has already been installed on another computer with the same user name");
+                        if (checkInstallSQLDB() == true)
+                        {
+                            throw new Exception("Application has already been installed on another computer with the same user name");
+                        }
                     }
+                    catch (Exception ex)
+                    {
+                        writeEventLog(ex.Message, EventLogEntryType.Error);
+                    }                   
                 }
-
             }
         }
 
@@ -949,38 +955,30 @@ namespace opendeployer
         {
 
             ConnectionStringSettings conSettings = new ConnectionStringSettings("opendeployer", "Server=" + _sqlserver + ";Database=opendeployer;User Id=" + _sqlusername + ";Password=" + _sqlpassword + "");
-                       
-            try
+
+            using (SqlConnection sqlConn = new SqlConnection(conSettings.ConnectionString))
             {
-                using (SqlConnection sqlConn = new SqlConnection(conSettings.ConnectionString))
+                sqlConn.Open();
+
+                using (SqlCommand sqlComm = new SqlCommand("SELECT * FROM  Deployments WHERE guid=@guid AND username=@username", sqlConn))
                 {
-                    sqlConn.Open();
+                    Guid applicationGuid = new Guid(_applicationGuid);
+                    sqlComm.Parameters.Add("guid", SqlDbType.UniqueIdentifier).Value = applicationGuid;
+                    sqlComm.Parameters.Add("username", SqlDbType.NVarChar).Value = Environment.UserName;
 
-                    using (SqlCommand sqlComm = new SqlCommand("SELECT * FROM  Deployments WHERE guid=@guid AND username=@username", sqlConn))
+                    using (SqlDataReader rdr = sqlComm.ExecuteReader())
                     {
-                        Guid applicationGuid = new Guid(_applicationGuid);
-                        sqlComm.Parameters.Add("guid", SqlDbType.UniqueIdentifier).Value = applicationGuid;
-                        sqlComm.Parameters.Add("username", SqlDbType.NVarChar).Value = Environment.UserName;
-
-                        using (SqlDataReader rdr = sqlComm.ExecuteReader())
+                        while (rdr.Read())
                         {
-                            while (rdr.Read())
+                            if (rdr.HasRows == true)
                             {
-                                if (rdr.HasRows == true)
-                                {
-                                    return true;
-                                }
+                                return true;
                             }
                         }
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                writeEventLog(ex.Message, EventLogEntryType.Error);
-                Environment.Exit(1);
-            }
-
+              
             return false;
         }
 
