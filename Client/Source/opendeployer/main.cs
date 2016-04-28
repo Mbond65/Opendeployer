@@ -1076,7 +1076,7 @@ namespace opendeployer
             XmlNode nodes = doc.DocumentElement.SelectSingleNode("/Software/CommandLines");
 
             _commandLinesTotal = nodes.ChildNodes.Count;
-            _commandLinesRan = 1;
+            _commandLinesRan = 0;
 
             bwWorkerRunInstall.ReportProgress(0);
 
@@ -1088,9 +1088,10 @@ namespace opendeployer
                 startInfo.FileName = @node.FirstChild.InnerText;
                 startInfo.WindowStyle = ProcessWindowStyle.Hidden;
                 startInfo.Arguments = @node.LastChild.InnerText;
+                startInfo.Verb = "runas";
 
                 using (Process exeProcess = Process.Start(startInfo))
-                {
+                {                
                     exeProcess.WaitForExit();
                 }
                 _commandLinesRan += 1;
