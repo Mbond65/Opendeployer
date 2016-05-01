@@ -36,14 +36,13 @@
             this.lblProceedMessage = new MetroFramework.Controls.MetroLabel();
             this.rbInstallNow = new MetroFramework.Controls.MetroRadioButton();
             this.rbInstallLaterDate = new MetroFramework.Controls.MetroRadioButton();
-            this.dtPicker = new System.Windows.Forms.DateTimePicker();
             ((System.ComponentModel.ISupportInitialize)(this.pbLogo)).BeginInit();
             this.SuspendLayout();
             // 
             // txtbtnYes
             // 
             this.txtbtnYes.Image = null;
-            this.txtbtnYes.Location = new System.Drawing.Point(167, 261);
+            this.txtbtnYes.Location = new System.Drawing.Point(167, 227);
             this.txtbtnYes.Name = "txtbtnYes";
             this.txtbtnYes.Size = new System.Drawing.Size(109, 23);
             this.txtbtnYes.TabIndex = 0;
@@ -55,7 +54,7 @@
             // txtbtnNo
             // 
             this.txtbtnNo.Image = null;
-            this.txtbtnNo.Location = new System.Drawing.Point(304, 261);
+            this.txtbtnNo.Location = new System.Drawing.Point(294, 227);
             this.txtbtnNo.Name = "txtbtnNo";
             this.txtbtnNo.Size = new System.Drawing.Size(109, 23);
             this.txtbtnNo.TabIndex = 1;
@@ -102,7 +101,6 @@
             this.rbInstallNow.TabStop = true;
             this.rbInstallNow.Text = "Install now";
             this.rbInstallNow.UseSelectable = true;
-            this.rbInstallNow.CheckedChanged += new System.EventHandler(this.rbInstallNow_CheckedChanged);
             // 
             // rbInstallLaterDate
             // 
@@ -113,28 +111,12 @@
             this.rbInstallLaterDate.TabIndex = 8;
             this.rbInstallLaterDate.Text = "Install at a later date";
             this.rbInstallLaterDate.UseSelectable = true;
-            this.rbInstallLaterDate.CheckedChanged += new System.EventHandler(this.rbInstallLaterDate_CheckedChanged);
-            // 
-            // dtPicker
-            // 
-            this.dtPicker.CustomFormat = "MMMMdd yyyy hh:mm tt";
-            this.dtPicker.Enabled = false;
-            this.dtPicker.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
-            this.dtPicker.Location = new System.Drawing.Point(165, 215);
-            this.dtPicker.MaxDate = new System.DateTime(2016, 5, 26, 14, 26, 50, 325);
-            this.dtPicker.MinDate = new System.DateTime(2016, 4, 26, 14, 26, 50, 323);
-            this.dtPicker.Name = "dtPicker";
-            this.dtPicker.ShowUpDown = true;
-            this.dtPicker.Size = new System.Drawing.Size(200, 20);
-            this.dtPicker.TabIndex = 10;
-            this.dtPicker.Value = new System.DateTime(2016, 4, 26, 14, 26, 50, 323);
             // 
             // Proceed
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(436, 307);
-            this.Controls.Add(this.dtPicker);
+            this.ClientSize = new System.Drawing.Size(436, 283);
             this.Controls.Add(this.rbInstallLaterDate);
             this.Controls.Add(this.rbInstallNow);
             this.Controls.Add(this.lblProceedMessage);
@@ -162,6 +144,5 @@
         private MetroFramework.Controls.MetroLabel lblProceedMessage;
         private MetroFramework.Controls.MetroRadioButton rbInstallNow;
         private MetroFramework.Controls.MetroRadioButton rbInstallLaterDate;
-        private System.Windows.Forms.DateTimePicker dtPicker;
     }
 }

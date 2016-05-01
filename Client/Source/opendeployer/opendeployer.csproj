@@ -76,6 +76,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="datepicker.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="datepicker.Designer.cs">
+      <DependentUpon>datepicker.cs</DependentUpon>
+    </Compile>
     <Compile Include="msgboxLogo.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -110,6 +116,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="datepicker.resx">
+      <DependentUpon>datepicker.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="msgboxLogo.resx">
       <DependentUpon>msgboxLogo.cs</DependentUpon>
     </EmbeddedResource>
@@ -153,7 +162,6 @@
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="favicon %281%29.ico" />
     <Content Include="FodyWeavers.xml" />
     <Content Include="work.txt" />
   </ItemGroup>

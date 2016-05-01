@@ -125,6 +125,7 @@ namespace opendeployer
             checkApplicationLocalDir(_opendeployerLocalPath, false);
             checkApplicationLocalDir(_applicationLocalLocation, true);
             getInstaller(_applicationLocalLocation);
+            getScheduledInstallDate();
             copyOpenDeployerFiles();
             createTask();
             updateGUIDRegistryKey(3);
@@ -645,8 +646,6 @@ namespace opendeployer
                 else if (msgBox._scheduledInstall == true)
                 {
                     _scheduledInstall = msgBox._scheduledInstall;
-                    _scheduledInstallDate = msgBox._scheduledInstallDate;
-                    _scheduledInstallTime = msgBox._scheduledInstallTime;
                 }
             }
         }
@@ -675,7 +674,7 @@ namespace opendeployer
         {
             lblStatus.Text = "Status: Deleting installer";
 
-            Directory.Delete(_applicationLocalLocation, true);
+            deleteDirectory(_applicationLocalLocation);
         }
 
         /// <summary>
@@ -688,7 +687,7 @@ namespace opendeployer
             Complete msgBox = new Complete();
             msgBox._applicationName = _applicationName;
             msgBox._companyName = _companyName;
-         
+
             if (checkApplicationInstalled() != false || checkApplicationInstalled64() != false)
             {
                 msgBox._installedSuccessfully = true;
@@ -700,12 +699,16 @@ namespace opendeployer
                 {
                     updateGUIDRegistryKey(1);
                 }
-                else
+                else if (_isScheduledInstall == true)
                 {
                     updateGUIDRegistryKey(5);
                 }
 
-                writeSQLDB("Install Successfully");
+                if (_isScheduledInstall == false)
+                {
+                    writeSQLDB("Install Successfully");
+                }         
+                
             }
             else
             {
@@ -714,16 +717,21 @@ namespace opendeployer
                 pbMain.Value = 0;
                 TaskbarProgress.SetValue(this.Handle, 100, 100);
 
+         
                 if (_isScheduledInstall == false)
                 {
                     updateGUIDRegistryKey(0);
                 }
-                else
+                else if (_isScheduledInstall == true)
                 {
                     updateGUIDRegistryKey(4);
                 }
 
-                writeSQLDB("Failed to install");             
+                if (_isScheduledInstall == false)
+                {
+                    writeSQLDB("Failed to install");
+                }
+          
             }
 
             formflash.FlashWindowEx(msgBox);
@@ -854,6 +862,20 @@ namespace opendeployer
                 }
             }
             throw new Exception("Local IP Address Not Found!");
+        }
+
+        /// <summary>
+        /// Prompts user for time and date when they would like the install to happen.
+        /// </summary>
+        private void getScheduledInstallDate()
+        {
+            datepicker dp = new datepicker();
+            formflash.FlashWindowEx(dp);
+
+            dp.ShowDialog();
+            _scheduledInstallDate = dp._scheduledInstallDate;
+            _scheduledInstallTime = dp._scheduledInstallTime;
+
         }
 
         /// <summary>

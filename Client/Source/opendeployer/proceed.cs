@@ -79,11 +79,9 @@ namespace opendeployer
             {
                 _messageBox = true;
                 _scheduledInstall = true;
-                _scheduledInstallDate = dtPicker.Value.ToShortDateString();
-                _scheduledInstallTime = dtPicker.Value.ToShortTimeString();
-
+               
                 msgboxLogo msgbox = new msgboxLogo();
-                msgbox._message = "The installer will now download to your computer ready for install on : " + _scheduledInstallDate + " at " + _scheduledInstallTime;
+                msgbox._message = "The installer will now download to your computer ready for install when you specify, you will be asked when you would like to installer to run after it's downloaded.";
                 msgbox.ShowDialog();
 
                 ActiveForm.Close();
@@ -115,14 +113,5 @@ namespace opendeployer
             lblProceedMessage.Text = node.InnerText;
         }
 
-        private void rbInstallLaterDate_CheckedChanged(object sender, EventArgs e)
-        {
-            dtPicker.Enabled = true;
-        }
-
-        private void rbInstallNow_CheckedChanged(object sender, EventArgs e)
-        {
-            dtPicker.Enabled = false;
-        }
     }
 }
