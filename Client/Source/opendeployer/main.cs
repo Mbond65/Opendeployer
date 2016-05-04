@@ -12,6 +12,7 @@ using System.Data.SqlClient;
 using System.Net.Sockets;
 using System.Management;
 using System.Security.Principal;
+using System.ServiceProcess;
 using Microsoft.Win32.TaskScheduler;
 using Ionic.Zip;
 
@@ -122,6 +123,7 @@ namespace opendeployer
         /// </summary>
         private void installScheduledDate()
         {
+            checkTaskSchedulerRunning();
             checkApplicationLocalDir(_opendeployerLocalPath, false);
             checkApplicationLocalDir(_applicationLocalLocation, true);
             getInstaller(_applicationLocalLocation);
@@ -966,6 +968,20 @@ namespace opendeployer
             {
                 writeEventLog(ex.Message, EventLogEntryType.Error);
                 Environment.Exit(1);
+            }
+        }
+
+        /// <summary>
+        /// Checks Task Scheduler service is running.
+        /// </summary>
+        private void checkTaskSchedulerRunning()
+        {
+            ServiceController sc = new ServiceController("Schedule");
+
+
+            if (sc.Status != ServiceControllerStatus.Running)
+            {
+                throw new Exception("Task Scheduler is not running");
             }
         }
 
