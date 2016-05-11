@@ -35,6 +35,7 @@ namespace opendeployer
         private string _scheduledInstallTime;
         private string _scheduledInstallGUID;
         private string _computerID;
+        private string _deldir;
         private long _extractBytesTransferred;
         private long _extractBytesTotal;
         private int _commandLinesTotal;
@@ -538,7 +539,7 @@ namespace opendeployer
                         string displayName = (string)subkey.GetValue("DisplayName") ?? "NULL";
                         object version = subkey.GetValue("Version");
 
-                        if (displayName.ToLower() == _applicationName.ToLower() && (version ?? "notinstalled").ToString() == Convert.ToString(_applicationVersion))
+                        if ((displayName.ToLower() == _applicationName.ToLower()) && ((version ?? "notinstalled").ToString() == Convert.ToString(_applicationVersion)))
                         {
                             writeEventLog("Application already installed", EventLogEntryType.Information);
                             Environment.Exit(0);
@@ -563,7 +564,7 @@ namespace opendeployer
                         string displayName = (string)subkey.GetValue("DisplayName") ?? "NULL";
                         object version = subkey.GetValue("Version");
 
-                        if (displayName.ToLower() == _applicationName.ToLower() && (version ?? "notinstalled").ToString() == Convert.ToString(_applicationVersion))
+                        if ((displayName.ToLower() == _applicationName.ToLower()) && ((version ?? "notinstalled").ToString() == Convert.ToString(_applicationVersion)))
                         {
                             writeEventLog("Application already installed", EventLogEntryType.Information);
                             Environment.Exit(0);
@@ -690,7 +691,7 @@ namespace opendeployer
             msgBox._applicationName = _applicationName;
             msgBox._companyName = _companyName;
 
-            if (checkApplicationInstalled() != false || checkApplicationInstalled64() != false)
+            if ((checkApplicationInstalled() == true) || (checkApplicationInstalled64() == true))
             {
                 msgBox._installedSuccessfully = true;
                 lblStatus.Text = "Status: Complete";
@@ -1024,7 +1025,22 @@ namespace opendeployer
         /// Delete files and folder in specified directory.
         /// </summary>
         /// <param name="target_dir"></param>
-        private static void deleteDirectory(string target_dir)
+        private void deleteDirectory(string target_dir)
+        {
+            _deldir = target_dir;
+            bwWorkerDeleteDirectory.RunWorkerAsync();
+                
+            while (bwWorkerDeleteDirectory.IsBusy)
+            {
+                Application.DoEvents();
+            }
+        }
+
+        /// <summary>
+        /// Deletes directory recursively, used by backgroundworker.
+        /// </summary>
+        /// <param name="target_dir"></param>
+        private void deleteDirectoryRecursive(string target_dir)
         {
             string[] files = Directory.GetFiles(target_dir);
             string[] dirs = Directory.GetDirectories(target_dir);
@@ -1037,7 +1053,7 @@ namespace opendeployer
 
             foreach (string dir in dirs)
             {
-                deleteDirectory(dir);
+                deleteDirectoryRecursive(dir);
             }
 
             Directory.Delete(target_dir, false);
@@ -1141,6 +1157,42 @@ namespace opendeployer
         {
             lblStatus.Text = "Status: Running installer (" + _commandLinesRan + " of " + _commandLinesTotal + ")";
             pbMain.Value = e.ProgressPercentage;
+        }
+
+        private void bwWorkerRunInstall_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+        {
+            if (e.Error != null)
+            {
+                throw new Exception(e.Error.Message);
+            }
+        }
+
+        private void bwWorkerExtractFile_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+        {
+            if (e.Error != null)
+            {
+                throw new Exception(e.Error.Message);
+            }
+        }
+
+        private void bwWorkerDeleteDirectory_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+        {
+            string target_dir = _deldir;
+            deleteDirectoryRecursive(target_dir);            
+        }
+
+        private void bwWorkerDeleteDirectory_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
+        {
+            lblStatus.Text = "Status: Deleting installer";
+            pbMain.Value = e.ProgressPercentage;
+        }
+
+        private void bwWorkerDeleteDirectory_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+        {
+            if (e.Error != null)
+            {
+                throw new Exception(e.Error.Message);
+            }
         }
     }
 }
